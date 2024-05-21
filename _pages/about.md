@@ -14,18 +14,11 @@ profile:
      <p>Your City, State 12345-->
      <p>st. paul, mn</p>
 
-news: true # includes a list of news items
-selected_papers: true # includes a list of papers marked as "selected={true}"
+news: false # includes a list of news items
+selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 ---
 
 I'm a network engineer for [HPE Aruba Networking](https://www.arubanetworks.com/). Previously, I worked in the partner/VAR space. I obtained a BSc in Physics at Western Michigan University where I attended as a Medallion Scholar, the highest academic based scholarship. This website is primarily a place to document my own lab, write quick and dirty guides, and to point people to things I think are neat like this here official [VSG](https://www.arubanetworks.com/techdocs/VSG/).  
 
 I also may occasionally link things hobby related: guitar, development, reading, gaming
-
-
-Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
-
-Put your address / P.O. box / other info right below your picture. You can also disable any of these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
-
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
