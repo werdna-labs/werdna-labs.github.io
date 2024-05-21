@@ -16,7 +16,7 @@
     {
       "name": "HPE Aruba Networks",
       "position": "Senior Systems Engineer",
-      "url": "arubanetworks.com",
+      "url": "https://arubanetworks.com",
       "startDate": "2024-01-02",
       "endDate" : "",
       "summary": "Presales engineering for commercial enterprise and SLED customers. Educating and demoing end customers on the latest from HPE Aruba!",
@@ -25,11 +25,38 @@
     {
       "name": "High Point Networks",
       "position": "Network Engineer",
-      "url": "highpointnetworks.com",
+      "url": "https://highpointnetworks.com",
       "startDate": "2020-05-01",
       "endDate" : "2023-12-31",
-      "summary": "Pre and post sales network and voice engineering for commercial and SLED customers. Worked with a multitude of systems, vendors, and products. Scripted out large network deployments",
+      "summary": "Pre and post sales network and voice engineering for commercial and SLED customers. Worked with a multitude of systems, vendors, and products. Scripted out large network deployments.",
       "highlights": ["python", "network engineering", "voice engineering", "postsales support", "presales"]
+    },
+    {
+      "name": "Marco Technologies",
+      "position": "Voice Engineer",
+      "url": "https://marconet.com",
+      "startDate": "2018-08-01",
+      "endDate" : "2020-05-01",
+      "summary": "Implemented Mitel MiVoice Business solutions for customers with a heavy focus in Marco's offering of Unified Communications as a Service. Primarily worked on call center design and implementation.",
+      "highlights": ["call center design", "voice engineering"]
+    },
+    {
+      "name": "Abra Auto Body and Glass",
+      "position": "Telecom Technician",
+      "url": "https://abraauto.com",
+      "startDate": "2017-07-01",
+      "endDate" : "2018-09-01",
+      "summary": "Implemented Mitel MiVoice Business solutions for customers with a heavy focus in Marco's offering of Unified Communications as a Service. Primarily worked on call center design and implementation.",
+      "highlights": ["call center design", "voice engineering"]
+    },
+    {
+      "name": "Abra Auto Body and Glass",
+      "position": "Telecom Technician",
+      "url": "https://abraauto.com",
+      "startDate": "2008-09-01",
+      "endDate" : "2017-04-01",
+      "summary": "Implemented Mitel MiVoice Business solutions for customers with a heavy focus in Marco's offering of Unified Communications as a Service. Primarily worked on call center design and implementation.",
+      "highlights": ["call center design", "voice engineering"]
     }
   ],
   "volunteer": [],
@@ -37,7 +64,7 @@
     {
       "institution": "Western Michigan Unviversity",
       "location": "Kalamazoo, MI",
-      "url": "wmich.edu",
+      "url": "https://wmich.edu/",
       "area": "Physics",
       "studyType": "BSc",
       "startDate": "2010-09-01",
@@ -67,7 +94,7 @@
     {
       "name": "Python",
       "level": "Intermediate",
-      "icon": "fa-solid fa-hashtag",
+      "icon": "fa-solid fa-python",
       "keywords": [ 
         "automation",
         "apis",
@@ -78,8 +105,20 @@
     },
     {
       "name": "Network Engineering",
+      "level": "Advanced",
+      "icon": "fa-solid fa-network-wired",
+      "keywords": [ 
+        "switching",
+        "routing",
+        "security",
+        "wireless",
+        "ietf"
+      ]
+    },
+    {
+      "name": "Systems Engineering",
       "level": "Intermediate",
-      "icon": "fa-solid fa-hashtag",
+      "icon": "fa-solid fa-server",
       "keywords": [ 
         "switching",
         "routing",
@@ -98,38 +137,26 @@
   ],
   "interests": [
     {
-      "name": "Physics",
-      "icon": "fa-solid fa-tag",
-      "keywords": [
-        "Quantum Mechanics",
-        "Quantum Computing",
-        "Quantum Information",
-        "Quantum Cryptography",
-        "Quantum Communication",
-        "Quantum Teleportation"
-      ]
-    }
-  ],
-  "references": [
-    {
-      "name": "Professor John Doe",
-      "icon": "fa-solid fa-laptop",
-      "reference": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit. D"
+      "name": "guitar",
+      "icon": "fa-solid fa-guitar",
+      "keywords": []
     },
     {
-      "name": "Professor John Doe",
-      "icon": "fa-solid fa-thumbtack",
-      "reference": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit. D"
+      "name": "games",
+      "icon": "fa-solid fa-gamepad",
+      "keywords": []
+    },
+    {
+      "name": "coding",
+      "icon": "fa-solid fa-terminal",
+      "keywords": []
+    }
+    {
+      "name": "getting big",
+      "icon": "fa-solid fa-dumbell",
+      "keywords": []
     }
   ],
-  "projects": [
-    {
-      "name": "Quantum Computing",
-      "summary": "Quantum computing is the use of quantum-mechanical phenomena such as superposition and entanglement to perform computation. Computers that perform quantum computations are known as quantum computers.",
-      "highlights": ["Quantum Teleportation", "Quantum Cryptography"],
-      "startDate": "2018-01-01",
-      "endDate": "2018-01-01",
-      "url": "https://example.com"
-    }
-  ]
+  "references": [],
+  "projects": []
 }

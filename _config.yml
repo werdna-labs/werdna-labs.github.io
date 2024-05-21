@@ -176,9 +176,9 @@ collections:
       layout: post
     output: true
     permalink: /news/:path/
-  projects:
+  guides:
     output: true
-    permalink: /projects/:path/
+    permalink: /guides/:path/
 
 announcements:
   enabled: true
@@ -615,6 +615,4 @@ jsonresume:
   - awards
   - certificates
   - skills
-  - languages
   - interests
-  - references
