@@ -2,11 +2,9 @@
 title: Home
 ---
 
-# Andrew Lewandowski 
-
-Network Engineer by day; Street Fighter 6 Master by night. I work mostly on HPE
-Juniper (SRX, JUNOS EX and QFX, Mist Wireless, Mist) and HPE Aruba (AOS-CX, AOS,
-Clearpass and Central). These pages are working notes plus a [resume](/resume/).
+### Network Engineer by day; Street Fighter 6 Master by night. I work mostly on HPE
+### Juniper (SRX, JUNOS EX and QFX, Mist Wireless, Mist) and HPE Aruba (AOS-CX, AOS,
+### Clearpass and Central). These pages are working notes plus a [resume](/resume/).
 
 
 ## Notes
