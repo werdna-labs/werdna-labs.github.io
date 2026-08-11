@@ -5,7 +5,8 @@ updated: 2026-08-11
 ---
 
 # vSRX Multinode High Availability on ESXi 8
-## Working Draft - Probably don't do this yet but maybe do. It probably works. 
+
+## Working Draft - Probably don't do this yet but maybe do; it probably works
 
 A two-node **Multinode High Availability (MNHA)** vSRX 3.0 build, deployed firewall-on-a-stick on a
 single free/standalone ESXi 8 host. Junos 25.4R1.12.
@@ -49,6 +50,7 @@ a cloud tenant, or an outbound management dial-home. If you are interested in th
 13. [DHCP](#13-dhcp)
 14. [Logging](#14-logging)
 15. [Commit and verify](#15-commit-and-verify)
+
 - [Appendix A — ESXi security settings](#appendix-a--esxi-security-settings)
 - [Appendix B — Addressing plan](#appendix-b--addressing-plan)
 - [Appendix C — vSRX2 delta summary](#appendix-c--vsrx2-delta-summary)
@@ -77,7 +79,7 @@ design; Section 10 explains why the WAN side needs no shared address.
 ### Three decisions that shape everything else
 
 | Decision | Why |
-|---|---|
+| --- | --- |
 | `deployment-type hybrid` | LAN VLANs present a floating default gateway (VIP) to clients — switching-style behaviour — while the WAN/ICL side is routed and activeness is driven by signal routes. Hybrid does both; pure switching or pure routing each gives you only one half. |
 | **No `use-virtual-mac`** | The VIP resolves to the active node's own interface MAC. On failover the new active node sends a gratuitous ARP to re-point the VIP. GARP-based convergence avoids the synthetic `02:..` VMAC entirely, which removes a whole class of vSwitch forged-transmit drops. |
 | **No WAN VIP** | MNHA cannot float a DHCP-learned address. Each node holds its own lease and source-NATs to its own WAN interface. See Section 10. |
@@ -157,7 +159,7 @@ All of the following is done in the ESXi host client under **Networking**.
 `vSwitch0` already exists with your 10G vmnic uplinked to the 6200M trunk. Add one port group:
 
 | Setting | Value |
-|---|---|
+| --- | --- |
 | Name | `vSRX-Trunk` |
 | VLAN ID | **4095** — Virtual Guest Tagging. 4095 means "all VLANs, pass 802.1Q tags up to the guest." The vSRX does the tagging. (4095 is reserved for VGT, which is why the highest usable real VLAN here is 4092.) |
 | Promiscuous mode | Accept |
@@ -186,7 +188,7 @@ HA flaps that leave no trace in the Junos logs.
 Then two port groups on it:
 
 | Name | VLAN ID | Security |
-|---|---|---|
+| --- | --- | --- |
 | `SRX ICL` | 0 (untagged) | All three = Accept |
 | `SRX Management` | 0 (untagged) | All three = Accept |
 
@@ -239,7 +241,7 @@ hand-build: **EFI firmware**, and **VMXNET3** adapters — not E1000. vSRX 3.0 e
 Without the L7 service daemons, the resource footprint is modest:
 
 | Resource | Value |
-|---|---|
+| --- | --- |
 | vCPU | 2 |
 | RAM | 4 GB |
 | Disk | ~20 GB thin |
@@ -253,7 +255,7 @@ Without the L7 service daemons, the resource footprint is modest:
 vSRX maps vNICs to interfaces strictly by PCI/adapter order. Add them in exactly this order:
 
 | Adapter | Interface | Port group |
-|---|---|---|
+| --- | --- | --- |
 | Network adapter 1 | `fxp0` | `SRX Management` |
 | Network adapter 2 | `ge-0/0/0` | `SRX ICL` |
 | Network adapter 3 | `ge-0/0/1` | `vSRX-Trunk` |
@@ -421,6 +423,7 @@ The `.x.2` addresses on the LAN units are each node's own real interface address
 gateway that clients use is the floating VIP defined in Section 9.
 
 > **vSRX2 deltas:**
+>
 > - `ge-0/0/0.0` → `172.16.254.3/24`
 > - `ge-0/0/1.<unit>` → `10.1.X.3` / `10.20.54.3`
 > - `ge-0/0/1.3666` → `172.16.253.3/29`
@@ -591,6 +594,7 @@ set policy-options condition BACKUP_SIG if-route-exists address-family inet tabl
 ```
 
 > **vSRX2 deltas:**
+>
 > - `set routing-options autonomous-system 64513`
 > - `set protocols bgp group EBGP local-address 172.16.255.2`
 > - `set protocols bgp group EBGP peer-as 64512`
@@ -600,6 +604,7 @@ set policy-options condition BACKUP_SIG if-route-exists address-family inet tabl
 > Optional parallel-run plumbing, if you are cutting over from an existing edge firewall — vSRX2
 > points its default at vSRX1 across the `.3666` transit at a worse preference, and it is removed
 > once cutover completes:
+>
 > ```text
 > set routing-options static route 0.0.0.0/0 qualified-next-hop 172.16.253.2 preference 49
 > ```
@@ -671,6 +676,7 @@ Note there is **no VIP bound to `ge-0/0/1.4092`**, and no VIP on the `.3666` tra
 carries a DHCP-learned address that cannot float; the transit is point-to-point between the nodes.
 
 > **vSRX2 deltas:**
+>
 > - `set chassis high-availability local-id 2 local-ip 172.16.255.2`
 > - `set chassis high-availability peer-id 1 peer-ip 172.16.255.1`
 > - `set chassis high-availability peer-id 1 interface ge-0/0/0.0`
@@ -971,7 +977,7 @@ show security policies hit-count
 ### What "good" looks like
 
 | Check | Expected |
-|---|---|
+| --- | --- |
 | HA connection | `Conn State: UP`, `Cold Sync Status: COMPLETE` |
 | SRG1 | vSRX1 `ACTIVE` / vSRX2 `BACKUP`; peer `HEALTHY`; Failover Readiness `READY` |
 | SRG1 backup, hybrid mode | `Process Packet In Backup State: NO` |
@@ -1015,7 +1021,7 @@ All addressing is RFC 1918 plus two 172.16 transit ranges. Substitute your own; 
 load-bearing except the relationships (VIP = `.1`, vSRX1 = `.2`, vSRX2 = `.3`).
 
 | VLAN | Role | Subnet | VIP (gateway) | vSRX1 | vSRX2 |
-|---:|---|---|---|---|---|
+| ---: | --- | --- | --- | --- | --- |
 | 10 | clients | 10.1.10.0/24 | 10.1.10.1 | 10.1.10.2 | 10.1.10.3 |
 | 20 | wireless clients | 10.1.20.0/24 | 10.1.20.1 | 10.1.20.2 | 10.1.20.3 |
 | 30 | IoT clients | 10.1.30.0/24 | 10.1.30.1 | 10.1.30.2 | 10.1.30.3 |
@@ -1032,7 +1038,7 @@ load-bearing except the relationships (VIP = `.1`, vSRX1 = `.2`, vSRX2 = `.3`).
 | 4092 | internet / WAN | DHCP from ISP | — | DHCP | DHCP |
 
 | Non-VLAN | Role | vSRX1 | vSRX2 |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `ge-0/0/0.0` | ICL transit | 172.16.254.2/24 | 172.16.254.3/24 |
 | `lo0.0` | BGP / HA loopback | 172.16.255.1/32 | 172.16.255.2/32 |
 | `fxp0.0` | OOB management | 192.168.255.2/24 | 192.168.255.3/24 |
@@ -1046,7 +1052,7 @@ Every legitimate difference between the two nodes, in one place. Anything **not*
 should be byte-identical between the configs.
 
 | Category | vSRX1 | vSRX2 |
-|---|---|---|
+| --- | --- | --- |
 | Hostname | `vSRX1` | `vSRX2` |
 | Auth hashes | own | own |
 | LAN interface addresses | `.2` | `.3` |
