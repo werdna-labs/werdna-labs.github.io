@@ -180,6 +180,28 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
 
 img { max-width: 100%; height: auto; }
 
+/* Figures: use for diagrams and screenshots that need a caption. */
+figure {
+  margin: 1.5rem 0;
+}
+figure img {
+  display: block;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Diagrams drawn in text (ASCII topologies) - keep them monospaced and
+   scrollable rather than wrapped. */
+pre.diagram {
+  line-height: 1.35;
+  white-space: pre;
+}
+
 /* --- Table of contents list --------------------------------------- */
 
 .toc { list-style: none; padding-left: 0; }
@@ -198,4 +220,15 @@ img { max-width: 100%; height: auto; }
   .site-header nav, .skip-link, .site-footer { display: none; }
   body { max-width: none; color: #000; background: #fff; }
   a { color: #000; }
+}
+
+/* Image size utilities. Percentages stay responsive; px caps hard. */
+.img-sm    { width: 100%; max-width: 240px; }
+.img-md    { width: 100%; max-width: 420px; }
+.img-full  { width: 100%; }
+.img-left  { float: left;  margin: 0.25rem 1.25rem 0.75rem 0; }
+.img-right { float: right; margin: 0.25rem 0 0.75rem 1.25rem; }
+
+@media (max-width: 34rem) {
+  .img-left, .img-right { float: none; margin: 1.5rem 0; }
 }

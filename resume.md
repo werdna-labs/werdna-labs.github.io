@@ -4,22 +4,27 @@ permalink: /resume/
 description: Senior Presales Solutions Engineer - HPE Aruba networking, security, and complex routing.
 updated: 2026-08-11
 ---
-<img src="_images/me.jpg" alt="me" width="400" height="400">
-Andrew Lewandowski 
-Senior Presales Solutions Engineer
-Minneapolis, MN
 
-[andrew.t.lewandowski@gmail.com](mailto:andrew.t.lewandowski@gmail.com) &middot; [linkedin.com/in/AndrewTLewandowski](https://linkedin.com/in/AndrewTLewandowski)
+![my dog and I]({{ '/assets/images/me.jpg' | relative_url }})
+
+Andrew Lewandowski Senior Presales Solutions Engineer Minneapolis, MN
+
+[andrew.t.lewandowski@gmail.com](mailto:andrew.t.lewandowski@gmail.com) &middot;
+[linkedin.com/in/AndrewTLewandowski](https://linkedin.com/in/AndrewTLewandowski)
 
 ## Experience
 
 ### Senior Presales Solutions Engineer - HPE Networks
 Minneapolis, MN &middot; January 2024 - Present
 
-- Leads presales solution engineering for the MN/ND State, Local and Education segment, engaging technical stakeholders and executives navigating regulatory constraints alongside complex technical requirements.
+- Leads presales solution engineering for the MN/ND State, Local and Education
+  segment, engaging technical stakeholders and executives navigating regulatory
+  constraints alongside complex technical requirements.
 - Consistently exceeds multimillion-dollar assigned quotas.
-- Closed multi-million-dollar deals by building technical and business cases aligned to customer needs.
-- Provides consultative technical leadership across proof-of-concept, RFP responses, and solution design.
+- Closed multi-million-dollar deals by building technical and business cases
+  aligned to customer needs.
+- Provides consultative technical leadership across proof-of-concept, RFP
+  responses, and solution design.
 - Obtained expert-level HPE Aruba Networking certification.
 - Coaches teammates as the security and switching SME.
 
@@ -28,22 +33,28 @@ Minneapolis, MN
 
 **Network Engineer** &middot; March 2021 - December 2023
 
-- Architected and implemented network infrastructure for mid-enterprise and SLED customers.
-- Delivered presales solution engineering, whiteboarding, BOM generation, and stakeholder communication.
-- Supported deployments spanning 802.1X, wireless, OSPF/BGP routing, ACLs, and Aruba Central.
+- Architected and implemented network infrastructure for mid-enterprise and SLED
+  customers.
+- Delivered presales solution engineering, whiteboarding, BOM generation, and
+  stakeholder communication.
+- Supported deployments spanning 802.1X, wireless, OSPF/BGP routing, ACLs, and
+  Aruba Central.
 - Documented processes and scripted bulk configuration changes in Python.
 
 **UC Engineer** &middot; May 2020 - March 2021
 
 - Architected MiVoice Business and MiContact Center implementations.
 - Maintained the practice lab and coached teammates.
-- Guided customers through voice topology, produced Visio documentation, and troubleshot with Wireshark.
+- Guided customers through voice topology, produced Visio documentation, and
+  troubleshot with Wireshark.
 
 ### Voice Engineer - Marco Technologies
 Minneapolis, MN &middot; August 2018 - May 2020
 
-- Deployed UCaaS (MiCloud Business) and engineered hybrid voice and SD-WAN solutions.
-- Installed and upgraded infrastructure; troubleshot voice issues using packet captures and SMDR.
+- Deployed UCaaS (MiCloud Business) and engineered hybrid voice and SD-WAN
+  solutions.
+- Installed and upgraded infrastructure; troubleshot voice issues using packet
+  captures and SMDR.
 - Developed documentation and trained end-customer staff.
 
 ### Telecom Technician - ABRA Auto Body
@@ -81,7 +92,8 @@ FOSS enthusiast. Autodidact.
 - Aruba Certified Data Center Architect
 - Aruba Certified Campus Professional
 - Juniper Networks Certified Specialist - Mist (JNCIS-MistAI)
-- Juniper Networks Certified Associate - Enterprise Routing and Switching (JNCIA-Junos)
+- Juniper Networks Certified Associate - Enterprise Routing and Switching
+  (JNCIA-Junos)
 
 ## Education
 
