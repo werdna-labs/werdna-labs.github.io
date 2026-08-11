@@ -4,6 +4,7 @@ permalink: /resume/
 description: Senior Presales Solutions Engineer - HPE Aruba networking, security, and complex routing.
 updated: 2026-08-11
 ---
+<img src="_images/me.jpg" alt="My Image" width="400" height="400">
 
 Senior Presales Solutions Engineer
 Minneapolis, MN
