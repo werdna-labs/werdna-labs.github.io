@@ -1,0 +1,45 @@
+{
+  // --- Encoding: the setting that prevents silent Jekyll breakage ---------
+  // A byte-order mark in front of `---` makes Jekyll miss the front matter
+  // and publish the page as raw text. Force no-BOM UTF-8 and stop VS Code
+  // from guessing a different encoding when it opens a file.
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": false,
+  "files.eol": "\n",
+
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  "[markdown]": {
+    // Two trailing spaces are a hard line break in Markdown. Trimming them
+    // silently changes rendered output, so leave Markdown alone.
+    "files.trimTrailingWhitespace": false,
+    "editor.wordWrap": "on",
+    "editor.rulers": [80]
+  },
+
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  },
+
+  // --- Keep build output out of search results and the file watcher -------
+  "search.exclude": {
+    "_site": true,
+    ".jekyll-cache": true,
+    "vendor": true
+  },
+  "files.watcherExclude": {
+    "**/_site/**": true,
+    "**/.jekyll-cache/**": true,
+    "**/vendor/**": true
+  },
+
+  // --- Git behavior -------------------------------------------------------
+  "git.autofetch": true,
+  // Require an explicit stage step rather than committing all changes when
+  // nothing is staged.
+  "git.enableSmartCommit": false,
+  "git.confirmSync": false
+}

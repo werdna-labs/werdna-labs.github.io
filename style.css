@@ -1,0 +1,201 @@
+/* ------------------------------------------------------------------
+   Theme: one file, no build step, no dependencies.
+   Colors follow the OS setting via prefers-color-scheme.
+   All text/background pairs below meet WCAG AA (4.5:1) or better.
+   ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light dark;
+
+  --bg:            #ffffff;
+  --fg:            #1a1a1a;
+  --muted:         #5a5a5a;   /* 6.3:1 on --bg */
+  --link:          #0b5fff;   /* 5.1:1 on --bg */
+  --link-visited:  #6b3fa0;
+  --border:        #d8d8d8;
+  --surface:       #f4f4f5;   /* code, tables, blockquotes */
+
+  --measure: 42rem;           /* ~70 characters at this size */
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:           #14161a;
+    --fg:           #e6e6e6;  /* 14.5:1 */
+    --muted:        #a6a6a6;  /* 7.4:1  */
+    --link:         #7ab4ff;  /* 8.4:1  */
+    --link-visited: #c3a6ff;
+    --border:       #2e3238;
+    --surface:      #1e2126;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  /* Slightly larger than the 16px default; respects browser zoom settings. */
+  font-size: 106.25%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 4rem;
+  max-width: var(--measure);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  /* Left-aligned, unjustified text is easier to track for dyslexic readers. */
+  text-align: left;
+  overflow-wrap: break-word;
+}
+
+/* --- Skip link ---------------------------------------------------- */
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 2px solid var(--link);
+  border-radius: 4px;
+  z-index: 10;
+}
+
+/* --- Header / nav / footer ---------------------------------------- */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.site-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--fg);
+  text-decoration: none;
+}
+.site-title:hover { text-decoration: underline; }
+
+.site-header nav a { margin-right: 1rem; }
+.site-header nav a:last-child { margin-right: 0; }
+
+.site-footer {
+  margin-top: 4rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* --- Typography --------------------------------------------------- */
+
+h1, h2, h3, h4 {
+  line-height: 1.25;
+  margin: 2.25rem 0 0.75rem;
+  font-weight: 650;
+}
+h1 { font-size: 1.9rem; margin-top: 0; }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.2rem; }
+h4 { font-size: 1.05rem; }
+
+p, ul, ol, dl, table, pre, blockquote { margin: 0 0 1.15rem; }
+
+ul, ol { padding-left: 1.4rem; }
+li { margin-bottom: 0.35rem; }
+
+.meta { color: var(--muted); font-size: 0.9rem; margin-top: -0.5rem; }
+
+/* --- Links -------------------------------------------------------- */
+
+a {
+  color: var(--link);
+  text-decoration: underline;      /* never color alone */
+  text-underline-offset: 0.15em;
+}
+a:visited { color: var(--link-visited); }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* --- Code, tables, quotes ----------------------------------------- */
+
+code, kbd, samp, pre { font-family: var(--font-mono); font-size: 0.9em; }
+
+code {
+  background: var(--surface);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+pre code { background: none; padding: 0; }
+
+blockquote {
+  margin-left: 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 3px solid var(--border);
+  color: var(--muted);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+th, td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+th { font-weight: 650; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+img { max-width: 100%; height: auto; }
+
+/* --- Table of contents list --------------------------------------- */
+
+.toc { list-style: none; padding-left: 0; }
+.toc li { margin-bottom: 0.9rem; }
+.toc .toc-desc { display: block; color: var(--muted); font-size: 0.95rem; }
+
+/* --- Motion ------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* --- Print -------------------------------------------------------- */
+
+@media print {
+  .site-header nav, .skip-link, .site-footer { display: none; }
+  body { max-width: none; color: #000; background: #fff; }
+  a { color: #000; }
+}

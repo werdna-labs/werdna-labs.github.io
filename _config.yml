@@ -1,0 +1,42 @@
+title: Andrew Lewandowski 
+tagline: Networking and Other Things Too!
+author: Andrew Lewandowski 
+description: Networking and Other Things Too!
+lang: en
+
+# Leave blank for a user site (username.github.io).
+# Set to "/reponame" if this is a project site.
+baseurl: ""
+url: "https://werdna-labs.github.io"
+
+# No theme gem. Layouts live in _layouts/.
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+  auto_ids: true
+
+collections:
+  notes:
+    output: true
+    permalink: /notes/:name/
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: ""
+      type: notes
+    values:
+      layout: default
+
+plugins:
+  - jekyll-sitemap
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{{ site.lang | default: 'en' }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% if page.title and page.url != '/' %}{{ page.title }} &middot; {% endif %}{{ site.title }}</title>
+  <meta name="description" content="{{ page.description | default: site.description }}">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav aria-label="Main">
+      <a href="{{ '/' | relative_url }}">Home</a>
+      <a href="{{ '/resume/' | relative_url }}">Resume</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    {% if page.title and page.url != '/' %}<h1>{{ page.title }}</h1>{% endif %}
+    {% if page.updated %}<p class="meta">Updated {{ page.updated | date: "%B %-d, %Y" }}</p>{% endif %}
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <p>{{ site.author | default: site.title }} &middot; {{ 'now' | date: "%Y" }}</p>
+  </footer>
+</body>
+</html>
