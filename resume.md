@@ -7,7 +7,7 @@ updated: 2026-08-11
 
 ![my dog and I]({{ '/assets/images/me.jpg' | relative_url }})
 
-Andrew Lewandowski Senior Presales Solutions Engineer Minneapolis, MN
+Senior Presales Solutions Engineer Minneapolis, MN
 
 [andrew.t.lewandowski@gmail.com](mailto:andrew.t.lewandowski@gmail.com) &middot;
 [linkedin.com/in/AndrewTLewandowski](https://linkedin.com/in/AndrewTLewandowski)
