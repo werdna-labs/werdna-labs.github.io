@@ -21,6 +21,12 @@ collections:
     output: true
     permalink: /notes/:name/
 
+sections:
+  - Juniper SRX
+  - HPE Aruba
+  - Home lab
+  - Automation
+
 defaults:
   - scope:
       path: ""
@@ -40,9 +46,3 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
-
-sections:
-  - Juniper SRX
-  - HPE Aruba
-  - Home lab
-  - Automation
