@@ -2,9 +2,11 @@
 title: Home
 ---
 
-### Network Engineer by day; Street Fighter 6 Master by night. I work mostly on HPE
-### Juniper (SRX, JUNOS EX and QFX, Mist Wireless, Mist) and HPE Aruba (AOS-CX, AOS,
-### Clearpass and Central). Opinions are my own. Guides are also my own. 
+## Network Engineer by day; Street Fighter 6 Master by night. 
+
+I work mostly on HPE Juniper (SRX, JUNOS EX and QFX, Mist Wireless, Mist) and
+HPE Aruba (AOS-CX, AOS, Clearpass and Central). Opinions are my own. Guides are
+also my own. In fact, this whole thing is my own I suppose. 
 
 
 ## Notes

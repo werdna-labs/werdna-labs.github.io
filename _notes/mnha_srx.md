@@ -2,6 +2,7 @@
 title: "vSRX Multinode High Availability on ESXi 8 — Lab Build Guide"
 description: "Two-node vSRX 3.0 MNHA firewall-on-a-stick on a single standalone ESXi 8 host. Base L4 firewalling, NAT, DHCP, and SRG failover — no subscription services."
 updated: 2026-08-11
+section: Juniper SRX
 ---
 
 # vSRX Multinode High Availability on ESXi 8

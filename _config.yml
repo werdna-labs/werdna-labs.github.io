@@ -1,6 +1,6 @@
 title: werdna-labs
 tagline: Networking and Other Things Too!
-author: Andrew Lewandowski 
+author: Andrew Lewandowski
 description: Networking and Other Things Too!
 lang: en
 
@@ -40,3 +40,9 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - vendor
+
+sections:
+  - Juniper SRX
+  - HPE Aruba
+  - Home lab
+  - Automation
