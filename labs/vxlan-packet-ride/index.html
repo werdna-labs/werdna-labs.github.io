@@ -992,7 +992,7 @@ starT.add(new THREE.LineSegments(sGeo,sMat));
 const sRings=[];for(let i=0;i<12;i++){const m=new THREE.LineBasicMaterial({color:COL.over,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,fog:false});
   const r=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(circlePts(6.2,72)),m);r.position.z=-6+i*(TLEN/12);starT.add(r);sRings.push(r);}
 function updateStar(w,dt,col){
-  const v=RIDE_V*speed*dt,len=.3+7*w;
+  const v=RIDE_V*(REDUCE?.35:1)*speed*dt,len=.3+7*w;
   for(let i=0;i<SN;i++){let z=sZ[i]-v;if(z<-6)z+=TLEN;sZ[i]=z;const x=Math.cos(sAng[i])*sRad[i],y=Math.sin(sAng[i])*sRad[i];
     sPos[i*6]=x;sPos[i*6+1]=y;sPos[i*6+2]=z;sPos[i*6+3]=x;sPos[i*6+4]=y;sPos[i*6+5]=z+len;}
   sGeo.attributes.position.needsUpdate=true;sMat.opacity=w;spaceMat.opacity=Math.min(1,w*1.6);
@@ -1027,7 +1027,7 @@ const arches=[];for(let i=0;i<10;i++){const a=new THREE.LineLoop(new THREE.Buffe
 const LT=lampTex(),lamps=[];for(let i=0;i<14;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:LT,transparent:true,opacity:0,depthWrite:false,fog:false}));
   s.position.set(i%2?3.3:-3.3,2.7,-6+i*(TLEN/14));s.scale.set(1.5,1.5,1);streetT.add(s);lamps.push(s);}
 function updateStreet(w,dt){
-  const v=RIDE_V*.8*speed*dt;
+  const v=RIDE_V*.8*(REDUCE?.35:1)*speed*dt;
   wallTex.offset.y+=v*wallTex.repeat.y/TLEN;roadTex.offset.y-=v*roadTex.repeat.y/TLEN;
   wallMat.opacity=roadMat.opacity=w;archMat.opacity=w*.55;
   arches.forEach(a=>{let z=a.position.z-v;if(z<-6)z+=TLEN;a.position.z=z;});
@@ -1295,7 +1295,7 @@ function tick(now){
     const fv=60+(REDUCE?0:18*warp);if(Math.abs(camera.fov-fv)>.05){camera.fov+=(fv-camera.fov)*Math.min(1,dt*8);camera.updateProjectionMatrix();}
   }else controls.update();
   /* ride tunnel */
-  warp=(mode==='ride'&&moving&&legD>.5&&!tgt.jump&&!REDUCE)?Math.min(1,legT/.1)*Math.min(1,(1-legT)/.16):0;
+  warp=(mode==='ride'&&moving&&legD>.5&&!tgt.jump)?Math.min(1,legT/.1)*Math.min(1,(1-legT)/.16):0;
   const inT=warp>.6;underG.visible=showU&&!inT;overG.visible=showO&&!inT;trail.visible=active.visible=!inT;if(inT){clones.forEach(c=>c.visible=false);tagG.visible=false;}
   const TT=KID?streetT:starT;(KID?starT:streetT).visible=false;TT.visible=warp>.01;
   if(TT.visible){camera.getWorldPosition(tmp);TT.position.copy(tmp);TT.lookAt(P);if(KID)updateStreet(warp,dt);else updateStar(warp,dt,C(sc.color));}
