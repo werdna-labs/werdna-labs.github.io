@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
-<title>VXLAN Packet Ride</title>
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Packet Ride Crayon Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Gaegu:wght@400;700&family=Patrick+Hand&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 /* Layout: full-bleed WebGL fabric; brand + grouped scenario tabs top-left, header-stack inspector right, hop timeline + transport bottom.
    Palette: HPE dark neutrals + HPE core palette, Aruba orange/blue, Juniper green. Single committed dark look. */
@@ -121,20 +121,98 @@ select{background:var(--raise);border:1px solid var(--line);border-radius:6px;pa
   #ctl{right:0}
   #timeline button{min-width:58px}
 }
+
+/* Crayon mode: wax crayon on manila construction paper. Hand-lettered display (Gaegu), friendly print body (Patrick Hand),
+   wobbly ink outlines, scribble fills generated at runtime (--paper, --scrib-*). */
+body:not(.kid) .k-only{display:none!important}
+body.kid .t-only{display:none!important}
+#kid{border-color:#f2c21b}
+.crayon{width:24px;height:9px;flex:none;background:#f2c21b;clip-path:polygon(0 0,74% 0,100% 50%,74% 100%,0 100%);box-shadow:inset -6px 0 0 #e6a700}
+body.kid{
+  --bg:#fbf3df;--panel:#fffaf0;--raise:#fff3d9;--line:#2d2a32;--ink:#2d2a32;--mute:#5b5560;--faint:#8a8290;--brand:#3c9d5d;
+  --drop:#e04848;--drop-ink:#b8312f;
+  --f-display:"Gaegu","Patrick Hand","Comic Sans MS",cursive;--f-body:"Patrick Hand","Gaegu","Comic Sans MS",cursive;
+  --wob:20px 6px 24px 8px/8px 24px 6px 20px;--wob-s:12px 5px 10px 6px/6px 10px 5px 12px;
+  color-scheme:light;font-size:17px;
+}
+body.kid #app{background:var(--bg)}
+body.kid .brand h1{font-family:var(--f-display);font-weight:700;font-size:42px;letter-spacing:0;filter:url(#rough)}
+body.kid .brand p{color:var(--ink);font-size:17px;line-height:1.35;max-width:54ch;background:rgba(255,250,240,.86);padding:5px 10px;border-radius:var(--wob-s)}
+body.kid .brand .mark{height:16px;width:46px;margin-top:10px;background:var(--scrib-green),#8fd17a;border:2px solid var(--ink);border-radius:var(--wob-s);transform:rotate(-5deg)}
+body.kid .grp>span{font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:0;text-transform:none;color:var(--mute);width:150px}
+body.kid .grp button{background:#fffaf0;border:2px solid var(--ink);color:var(--ink);border-radius:var(--wob-s);font-size:15px;padding:3px 11px}
+body.kid .grp button i{width:11px;height:11px;border:1.5px solid var(--ink)}
+body.kid .grp button[aria-selected="true"]{background:var(--scrib-yellow),#f7d257;color:var(--ink);font-weight:400;transform:rotate(-1.5deg)}
+body.kid .legend{color:var(--ink);font-size:15px;background:rgba(255,250,240,.86);padding:4px 10px;border-radius:var(--wob-s);width:fit-content;max-width:100%}
+body.kid .legend i{height:7px;border-radius:4px;border:1px solid var(--ink)}
+body.kid select{background:#fffaf0;border:2px solid var(--ink);border-radius:var(--wob-s);color:var(--ink)}
+body.kid #panel{background:var(--paper),#fffaf0;border:3px solid var(--ink);border-top:12px solid var(--accent);border-radius:var(--wob);box-shadow:5px 6px 0 rgba(45,42,50,.16);gap:14px}
+body.kid .eyebrow{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:0;text-transform:none}
+body.kid #panel h2{font-family:var(--f-display);font-weight:700;font-size:36px;line-height:1}
+body.kid #panel p{color:var(--ink);font-size:19px;line-height:1.42}
+body.kid .drop{background:var(--scrib-red),#f6b3ae;border:2.5px solid var(--ink);color:var(--ink);border-radius:var(--wob-s);font-family:var(--f-display);font-size:21px;transform:rotate(-1deg)}
+body.kid #ctl{background:linear-gradient(rgba(251,243,223,0),rgba(251,243,223,.96) 35%)}
+body.kid #timeline button{border-top:6px solid #ddd1b8;color:var(--faint);font-family:var(--f-display);font-weight:700}
+body.kid #timeline button .n{font-family:var(--f-display)}
+body.kid #timeline button .t{font-size:14px}
+body.kid #timeline button.done{border-top-color:var(--mute);color:var(--mute)}
+body.kid #timeline button.cur{border-top-color:var(--accent);color:var(--ink)}
+body.kid .btn,body.kid .seg{border:2px solid var(--ink);border-radius:var(--wob-s);box-shadow:2px 3px 0 rgba(45,42,50,.2)}
+body.kid .btn{background:#fffaf0;color:var(--ink);font-family:var(--f-display);font-weight:700;font-size:18px;padding:4px 12px}
+body.kid .btn:hover{border-color:var(--ink);transform:rotate(-1deg)}
+body.kid .btn.primary{background:var(--scrib-green),#8fd17a;color:var(--ink)}
+body.kid .btn[aria-pressed="true"]{color:var(--ink);background:var(--scrib-yellow),#f7d257}
+body.kid .seg button{background:#fffaf0;color:var(--mute);font-family:var(--f-display);font-weight:700;font-size:18px;padding:4px 11px}
+body.kid .seg button[aria-pressed="true"]{background:var(--scrib-yellow),#f7d257;color:var(--ink)}
+body.kid .kbd{font-family:var(--f-display);font-size:16px;color:var(--mute)}
+body.kid #toast{background:#fffaf0;color:var(--ink);border:2px solid var(--ink);border-radius:var(--wob-s)}
+body.kid :focus-visible{outline:3px dashed var(--ink);outline-offset:3px}
+body.kid .cmp{font-size:16px;min-width:300px}
+body.kid .cmp th,body.kid .cmp td{border-bottom:1.5px dashed var(--mute)}
+body.kid .cmp thead th{font-family:var(--f-display);font-weight:700;font-size:16px;text-transform:none;letter-spacing:0;color:var(--ink)}
+body.kid .cmp thead th:last-child{color:var(--brand)}
+body.kid .cmp td,body.kid .cmp td:last-child,body.kid .cmp tbody th{color:var(--ink)}
+.k-carry{display:flex;flex-direction:column;gap:8px}
+.k-lbl{font-family:var(--f-display);font-weight:700;font-size:17px;color:var(--mute)}
+.env{background:var(--scrib-orange),#f8b26a;border:3px solid var(--ink);border-radius:var(--wob);padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px}
+.env b{font-family:var(--f-display);font-size:20px;line-height:1.1}
+.env small{font-size:15px;color:var(--ink)}
+.env.post{background:var(--scrib-purple),#d7c4f3}
+.env.open{opacity:.55;border-style:dashed}
+.env.open b{text-decoration:line-through}
+.note{background:#fffefa;border:2.5px solid var(--ink);border-radius:var(--wob-s);padding:7px 11px;font-size:17px;line-height:1.3;transform:rotate(-1deg);width:fit-content;max-width:100%}
+.note.card{background:#f1e8fd}
+.stk{display:inline-block;width:fit-content;background:var(--scrib-green),#8fd17a;border:2px solid var(--ink);border-radius:999px;padding:1px 14px;font-family:var(--f-display);font-weight:700;font-size:17px;transform:rotate(2deg)}
+.book{border:2px dashed var(--ink);border-radius:var(--wob-s);padding:6px 12px 8px;background:repeating-linear-gradient(#fffefa 0 29px,#bcd7ef 29px 30px);display:grid}
+.book .bk{font-family:var(--f-display);font-weight:700;font-size:16px;color:var(--mute);line-height:30px}
+.book div{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:0 12px;font-size:17px;line-height:30px}
+.book b{font-family:var(--f-display);font-size:18px}
+.k-note{font-size:17px;line-height:1.4;color:var(--ink);border-top:2px dashed var(--mute);padding-top:10px}
+@media (max-width:860px){body.kid .brand h1{font-size:30px}body.kid #panel h2{font-size:27px}body.kid #panel p{font-size:17px}}
+@media (prefers-reduced-motion:reduce){body.kid .btn:hover{transform:none}}
 </style>
 </head>
 <body>
-
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="2.6"/></filter></svg>
 <div id="app">
   <div id="view" aria-label="3D EVPN-VXLAN fabric"></div>
   <header id="top">
     <div class="brand"><span class="mark" aria-hidden="true"></span><div>
-      <h1>VXLAN Packet Ride</h1>
-      <p>Two spines, four leaves, one tenant, one ESI-LAG. Ride a packet through the underlay while its overlay twin crosses the tunnel.</p>
+      <h1><span class="t-only">VXLAN Packet Ride</span><span class="k-only">The Magic Mail Tunnel</span></h1>
+      <p><span class="t-only">Two spines, four leaves, one tenant, one ESI-LAG. Ride a packet through the underlay while its overlay twin crosses the tunnel.</span><span class="k-only">Ride along with Pip the packet as a note crosses town. Post offices wrap it in a big envelope, highway hubs carry it, and secret tunnels make far-away houses feel next door.</span></p>
     </div></div>
     <nav id="scen" aria-label="Scenario"></nav>
     <select id="scenSel" aria-label="Scenario"></select>
-    <div class="legend">
+    <div class="legend k-only">
+      <span><i style="background:#c98a4b"></i>Roads</span>
+      <span><i style="background:#2fa3d6"></i>Street tunnel</span>
+      <span><i style="background:#e6b417"></i>Whole-town tunnel</span>
+      <span><i style="background:#8e5bd1"></i>News postcards</span>
+      <span><i style="background:#2f6fd6"></i>Team Dot</span>
+      <span><i style="background:#4f9e32"></i>Name stickers</span>
+      <span><i style="background:#e04848"></i>Stopped</span>
+    </div>
+    <div class="legend t-only">
       <span><i style="background:var(--under)"></i>Underlay</span>
       <span><i style="background:var(--over)"></i>L2 VNI</span>
       <span><i style="background:var(--l3)"></i>L3VNI</span>
@@ -149,18 +227,19 @@ select{background:var(--raise);border:1px solid var(--line);border-radius:6px;pa
     <div id="timeline" aria-label="Hops"></div>
     <div class="row">
       <button class="btn" id="prev" title="Back one stop (←)">◀ Back</button>
-      <button class="btn primary" id="next" title="Next hop (Space)">Next hop ▶</button>
+      <button class="btn primary" id="next" title="Next hop (Space)"><span class="t-only">Next hop ▶</span><span class="k-only">Next stop ▶</span></button>
       <button class="btn" id="auto" aria-pressed="false">Auto</button>
-      <button class="btn" id="restart">Restart</button>
+      <button class="btn" id="restart"><span class="t-only">Restart</span><span class="k-only">Start over</span></button>
       <div class="seg" role="group" aria-label="Camera">
-        <button id="vRide" aria-pressed="false">Ride</button>
-        <button id="vOver" aria-pressed="true">Overview</button>
+        <button id="vRide" aria-pressed="false"><span class="t-only">Ride</span><span class="k-only">Ride along</span></button>
+        <button id="vOver" aria-pressed="true"><span class="t-only">Overview</span><span class="k-only">Bird's-eye</span></button>
       </div>
-      <button class="btn" id="tU" aria-pressed="true">Underlay</button>
-      <button class="btn" id="tO" aria-pressed="true">Overlay</button>
+      <button class="btn" id="tU" aria-pressed="true"><span class="t-only">Underlay</span><span class="k-only">Roads</span></button>
+      <button class="btn" id="tO" aria-pressed="true"><span class="t-only">Overlay</span><span class="k-only">Tunnels</span></button>
       <label class="row" style="gap:6px"><span class="kbd" style="display:inline">Speed</span>
         <select id="speed"><option value="0.6">0.6×</option><option value="1" selected>1×</option><option value="1.8">1.8×</option></select></label>
       <span class="spacer"></span>
+      <button class="btn" id="kid" aria-pressed="false" title="Explain it like I'm five (K)"><span class="crayon" aria-hidden="true"></span>Crayon mode</button>
       <button class="btn" id="vr">Enter VR</button>
     </div>
   </footer>
@@ -542,6 +621,181 @@ const SC=[];
   ]});
 })();
 
+/* ---------------- crayon mode: ELI5 script ---------------- */
+const KTAB={l2:'Same street',sym:'Other street · two helpers',asym:'Other street · one helper',bum:'Shout to everyone',cp:'Learning addresses',df:'Two driveways · pick a leader',alias:'Two driveways · share the work',gbpe:'Stickers · check at the end',ztis:'Stickers · check at the start'};
+const KGROUPS=['Mail trips','Address books & teams','Name-sticker rules'];
+const NK={HA:['Amy',"Amy's computer",'Maple Street'],HB:['Ben',"Ben's computer",'Maple Street'],HC:['Cleo',"Cleo's computer",'Oak Street'],HD:['Dot',"Dot's computer",'Maple St · 2 driveways']};
+for(let i=1;i<=4;i++){NK['L'+i]=['PO '+i,'Post Office '+i,'neighborhood mail stop'];NK['V'+i]=['Door '+i,'Tunnel Door '+i,'secret tunnel'];}
+for(let i=1;i<=2;i++)NK['S'+i]=['Hub '+i,'Highway Hub '+i,'big sorting center'];
+const KT={
+l2:[
+ {t:"Amy sends Ben a note",d:"Amy and Ben both live on Maple Street, but their houses connect to different post offices. Amy writes Ben's name on a note and sends it off, like passing a note to a friend across the classroom."},
+ {t:"Post Office 1 checks its address book",d:"Post Office 1 opens its address book. It says Ben gets his mail through Post Office 4. It learned that earlier, the way you save a friend's new address when they text it to you.",l:[["Ben","send through Post Office 4"]]},
+ {t:"Into a big envelope it goes",d:"Post Office 1 slides Amy's note, unopened, into a big orange envelope and writes “From Post Office 1, To Post Office 4” on the outside. It's like packing a lunchbox inside a backpack: the lunch doesn't change, it just gets carried.",n:"The big envelope adds a little extra weight, so the roads between buildings are built a bit wider than usual, like a door wide enough for someone wearing a backpack."},
+ {t:"Highway Hub 1 only reads the outside",d:"Highway Hub 1 works like a delivery truck driver. It reads the label on the big envelope and never peeks inside. There are two hubs, and this envelope picked Hub 1, the way you pick one of two checkout lines."},
+ {t:"Post Office 4 opens the big envelope",d:"The big envelope was addressed to Post Office 4, so it opens it like a present. Out comes Amy's note, exactly the way she wrote it, and Post Office 4 knows Ben lives on its block."},
+ {t:"Ben gets the note!",d:"Ben reads Amy's note. To Amy and Ben it felt like handing a note to the desk next door. They never saw the highway or the big envelope. That's the magic trick of the secret tunnel."}],
+sym:[
+ {t:"Amy writes to Cleo on Oak Street",d:"Cleo lives on a different street, Oak Street. Amy doesn't know how to get there, so she hands the note to the helper desk at her post office. Every post office has the same helper desk with the same name, like every school having a front office."},
+ {t:"Post Office 1 looks up Cleo",d:"The address book says Cleo gets mail through Post Office 3. Post Office 1 doesn't even need a map of Oak Street. It only needs to know which office to send it to, like knowing your cousin's school without knowing their classroom.",l:[["Cleo","send through Post Office 3, whole-town tunnel"]]},
+ {t:"Wrapped with the whole-town tunnel number",d:"Into the big envelope it goes. This time the envelope gets a special number that means “for anywhere in our town” instead of one street's number. Post Office 1 also updates the corners of the note, like a relay runner handing off the baton."},
+ {t:"Highway Hub 2 carries it",d:"This time the envelope took Hub 2. Hubs don't care what's inside. They're like the conveyor belt at the airport: bags on, bags off."},
+ {t:"Post Office 3 walks it over to Oak Street",d:"Post Office 3 opens the big envelope, sees the whole-town number, and carries the note to Oak Street. Two post offices each did one step, like two relay runners sharing a race."},
+ {t:"Cleo gets the note",d:"Cleo can tell two helpers touched the note: Post Office 1 and Post Office 3. The highway hubs stay invisible, like the stage crew in a school play."}],
+asym:[
+ {t:"Same trip, different rules",d:"Amy writes to Cleo again. This time every post office keeps a map of every street in town, even streets where it has no houses. It's like a librarian who memorizes every shelf in the library."},
+ {t:"Post Office 1 does all the thinking",d:"Because Post Office 1 has a map of Oak Street too, it plans the whole trip by itself: hop over to Oak Street, then find Cleo's house.",l:[["Cleo","Oak Street, through Post Office 3"]]},
+ {t:"Wrapped with Oak Street's number",d:"The big envelope gets Oak Street's number, not the whole-town number. The note inside is already finished, like a sandwich that's made before it goes in the lunchbox."},
+ {t:"The hub doesn't care",d:"Highway Hub 1 carries it the same as always. A truck driver doesn't care if the package is a birthday card or a bill."},
+ {t:"Post Office 3 just drops it off",d:"Post Office 3 opens the envelope and walks the note to Cleo's door on Oak Street. No extra thinking needed, like a mail carrier reading a house number."},
+ {t:"Cleo gets it: one helper this time",d:"Only Post Office 1 did the “switch streets” job. That's simple in a tiny town, but every office has to carry a map of every street. As the town grows, that's like a backpack stuffed with every textbook in school.",
+  c:{head:["","One helper","Two helpers"],rows:[["Who switches streets","Only the first post office","The first and the last post office"],["Number on the envelope","The other street's number","One whole-town number"],["Map each office carries","Every street in town","Only its own streets"],["Good for","Tiny towns","Most towns"]]}}],
+bum:[
+ {t:"Amy shouts a question",d:"Amy wants to find a computer called 10.1.10.99, but nobody knows where it lives. So she shouts down Maple Street, “Who has this name?” like yelling “Marco!” at the pool."},
+ {t:"Post Office 1 checks who's on Maple Street",d:"Post Office 1 keeps a list of every other office with houses on Maple Street: Post Offices 2, 3 and 4. It's like a class phone tree.",l:[["Maple Street","Post Offices 2, 3 and 4"]]},
+ {t:"Three copies, three envelopes",d:"Post Office 1 makes three copies of the shout and mails one to each office, like sending the same party invite to three friends. You're riding the copy headed to Post Office 4."},
+ {t:"The copies take different roads",d:"Each copy is its own envelope, so each can pick its own hub, like three kids walking to school on different sidewalks. Yours goes through Hub 1. The other two go through Hub 2."},
+ {t:"Post Office 4 repeats the shout",d:"Post Office 4 opens its copy and repeats the shout to the houses on its block. It does not send it back to the other offices. Otherwise the shout would bounce around forever, like an echo in a canyon."},
+ {t:"Everyone heard it",d:"Ben hears “Who has 10.1.10.99?” and shrugs. It isn't him. Most of the time the post offices already know the answer and whisper it right back to Amy, so the whole town doesn't have to hear a shout."}],
+cp:[
+ {t:"Ben moves in",d:"Ben's computer turns on and calls out, “Hi, I'm Ben, and I live here!” like a new kid introducing themselves on the first day of school."},
+ {t:"Post Office 4 writes a “new neighbor” postcard",d:"Post Office 4 writes down Ben's name and sends a postcard to both highway hubs: “New neighbor! Send Ben's mail through me.” This postcard is news for the post offices. It isn't a note for Ben."},
+ {t:"The hub shares the news",d:"Highway Hub 1 is like the morning announcements at school. It doesn't keep Ben's mail. It reads the news out to every other post office. Hub 2 does the same, so nobody misses it."},
+ {t:"Post Office 1 hears the news",d:"Post Office 1 asks, “Do I have houses on Maple Street?” Yes, so it keeps the postcard. Post Offices 2 and 3 ask the same question."},
+ {t:"Ben goes in the address book",d:"Post Office 1 writes in its address book: Ben, send through Post Office 4. Now when Amy writes to Ben, the office already knows the way, like having a friend's number saved in your phone.",l:[["Ben","send through Post Office 4"]]}],
+df:[
+ {t:"Dot's house has two driveways",d:"Dot's house connects to two post offices at once, Post Office 2 and Post Office 3, like a house with two driveways. If one gets blocked, the other still works. The two offices team up under one team name, so Dot sees them as one."},
+ {t:"Post Office 2 raises its hand",d:"Post Office 2 sends a postcard: “I'm on Team Dot!” Post Office 3 sends one too. It's like raising your hand to join a group project."},
+ {t:"The hub passes it along",d:"The hub reads the postcard to everyone, but only Team Dot members keep it. Post Offices 1 and 4 ignore it, like skipping an announcement for a club you're not in."},
+ {t:"Post Office 3 meets its teammate",d:"Now Post Offices 2 and 3 both know they're teammates. They wait a moment in case anyone else wants to join, then pick a leader."},
+ {t:"Picking who delivers group shouts",d:"They play a counting game, like “eeny, meeny, miny, moe,” that always ends the same way for everyone. For Maple Street, Post Office 2 wins: it delivers group shouts to Dot, and Post Office 3 stays quiet. Another street might pick Post Office 3, so they share the work.",l:[["Maple Street","Post Office 2 delivers"],["Post Office 3","stays quiet on Maple Street"]]},
+ {t:"Now Amy shouts for Dot",d:"Amy shouts down Maple Street, “Who is Dot's computer?”"},
+ {t:"Three copies again",d:"Post Office 1 mails one copy each to Post Offices 2, 3 and 4. It doesn't know that 2 and 3 are teammates, and it doesn't need to. You're riding the copy to Post Office 2."},
+ {t:"The copies cross the hubs",d:"Your copy goes through Hub 1. The other two go through Hub 2."},
+ {t:"The leader delivers",d:"Post Office 2 opens its copy and, because it's the leader, sends it down its driveway to Dot. Post Office 3 got a copy too, but keeps it, like a teammate letting the captain answer."},
+ {t:"Dot hears it exactly once",d:"Without a leader, both offices would deliver and Dot would hear the shout twice, like two people answering the same doorbell. The red copy at Post Office 3 is the one that stayed home."}],
+alias:[
+ {t:"Dot leaves by one driveway",d:"Whenever Dot sends something out, it happens to go down the driveway to Post Office 2. So Post Office 3 never sees Dot leave and doesn't know Dot lives there, like a neighbor who only ever sees you use the front door."},
+ {t:"Post Office 2 sends a “Dot lives here” postcard",d:"Post Office 2 tells everyone, “Dot lives with Team Dot.” Both offices have also been saying “We're on Team Dot” since the team started."},
+ {t:"The hub shares it",d:"Every post office hears about Dot. The team name on the postcard is the important clue."},
+ {t:"Post Office 1 puts the clues together",d:"Like a detective, Post Office 1 now has two clues: “Dot lives with Team Dot” and “Post Offices 2 and 3 are both on Team Dot.”"},
+ {t:"Two ways to reach Dot",d:"So Post Office 1 figures out it can send Dot's mail through either office, even though Post Office 3 never mentioned Dot. It's like learning there are two roads to Grandma's house.",l:[["Dot","Post Office 2 or Post Office 3"]]},
+ {t:"Amy sends Dot a note",d:"Amy already knows Dot's name, so she just writes the note."},
+ {t:"This time Post Office 3 gets the job",d:"Post Office 1 spreads the mail across both teammates, like a teacher splitting the class into two lines. This note lands in Post Office 3's line. Without the detective work, every note would pile up at Post Office 2."},
+ {t:"Highway Hub 2 carries it",d:"Nothing new for the hub. Envelopes in, envelopes out."},
+ {t:"Post Office 3 uses its driveway",d:"Post Office 3 opens the big envelope and sends the note straight down its own driveway to Dot."},
+ {t:"Delivered, with a backup plan",d:"Dot gets the note. If Post Office 2's driveway ever breaks, it sends one quick postcard, “I can't reach Team Dot!”, and every office stops using it for all of Dot's mail at once. It's one fire alarm instead of a hundred phone calls."}],
+gbpe:[
+ {t:"A camera tries to talk to a cash register",d:"Amy's computer is a security camera wearing a name sticker: 100, Camera. Ben's computer is a cash register with sticker 200. The rule says cameras may not talk to cash registers. They both live on Maple Street, so a fence between streets can't keep them apart."},
+ {t:"Post Office 1 reads the camera's sticker",d:"Post Office 1 knows Amy's sticker is 100, but not Ben's. It can't check the rule yet, so it sends the note along and lets the far office decide, like a bouncer at the back door instead of the front.",l:[["Amy","sticker 100, Camera"],["Ben","Post Office 4, sticker unknown"]]},
+ {t:"The sticker rides on the envelope",d:"Post Office 1 writes the sticker number on the outside of the big envelope so the far office can read it, like writing “From: Camera” on a package."},
+ {t:"A trip for nothing",d:"The hub carries the envelope as usual. The roads are busy carrying a note that's going to be thrown away, like driving across town to return something the store won't take back."},
+ {t:"Stopped at Post Office 4!",drop:"Uh-oh! Stopped at Post Office 4, the far end",d:"Post Office 4 opens the envelope, reads sticker 100, remembers Ben is sticker 200, and checks the rule: not allowed. Into the trash it goes. Ben never sees it.",l:[["From sticker","100, Camera"],["To sticker","200, Cash register"],["Rule","No!"]],n:"On the next trip, the first post office stops the note before it ever leaves."}],
+ztis:[
+ {t:"Ben's cash register shows its badge",d:"Ben's cash register logs in, like showing a badge at the door, and gets sticker 200, Cash register. Post Office 4 remembers Ben's sticker."},
+ {t:"Post Office 4 shares Ben's sticker",d:"When Post Office 4 sends its “Ben lives here” postcard, it adds “and his sticker is 200.” Now the sticker travels with the news, before anyone sends a note."},
+ {t:"The hub shares the news",d:"The hub reads the postcard to every office. The hub doesn't need to know any rules itself."},
+ {t:"Post Office 1 learns Ben's sticker",d:"Post Office 1 writes “Ben: Post Office 4, sticker 200” in its address book. Every office knows both stickers before any notes arrive.",l:[["Ben","Post Office 4, sticker 200"]]},
+ {t:"The camera tries again",d:"Amy's camera, sticker 100, tries to send the same note to Ben's cash register."},
+ {t:"Stopped at the front door!",drop:"Uh-oh! Stopped at Post Office 1, the front door",d:"Post Office 1 knows both stickers, 100 and 200. The rule says no, so it throws the note away right there. It never gets a big envelope and never touches the roads, like a bouncer at the front door instead of the back.",l:[["From sticker","100, Camera"],["To sticker","200, Cash register"],["Rule","No!"]],
+  n:"Rules only go one way, like a one-way street. If the cash register should be allowed to talk to the camera, that needs its own “yes” rule.",
+  c:{head:["","Fence between streets","Check at the end","Check at the start"],rows:[["Where the note stops","At the edge of town","At the last post office","At the first post office"],["Wasted trips on the roads","Some","Yes","None"],["Keeps same-street neighbors apart","Not really","Yes","Yes"]]}}]
+};
+SC.forEach(s=>{const k=KT[s.id];s.stops.forEach((st,i)=>{st.k=k&&k[i]||null;});});
+
+/* ---------------- crayon mode: palette + hand-drawn textures ---------------- */
+const KCOL={under:0xf28c28,over:0x2fa3d6,l3:0xe6b417,ctrl:0x8e5bd1,esi:0x2f6fd6,gbp:0x4f9e32,drop:0xe04848,brand:0x3c9d5d};
+const KCSS={under:'#f28c28',over:'#2fa3d6',l3:'#e6b417',ctrl:'#8e5bd1',esi:'#2f6fd6',gbp:'#4f9e32',drop:'#e04848',brand:'#3c9d5d'};
+const INKC='#2d2a32';
+let KID=false;
+const C=k=>(KID?KCOL:COL)[k];
+const CS=k=>(KID?KCSS:CSS)[k];
+const hexs=h=>typeof h==='string'?h:'#'+h.toString(16).padStart(6,'0');
+function crayonCanvas(hex,opt){
+  opt=opt||{};const S=opt.size||256,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');
+  g.fillStyle=opt.paper||'#fffaf0';g.fillRect(0,0,S,S);
+  g.strokeStyle=hexs(hex);g.lineCap='round';
+  const n=Math.round((opt.dens||1)*S*S/70),k=S/256;
+  for(let i=0;i<n;i++){
+    const x=Math.random()*S,y=Math.random()*S,a=-.62+Math.random()*.3,l=(10+Math.random()*30)*k,dx=Math.cos(a)*l,dy=Math.sin(a)*l;
+    g.globalAlpha=.22+Math.random()*.45;g.lineWidth=(1.4+Math.random()*3.4)*k;
+    for(const o of [[0,0],[-S,0],[0,S],[-S,S]]){g.beginPath();g.moveTo(x+o[0],y+o[1]);g.lineTo(x+o[0]+dx,y+o[1]+dy);g.stroke();}
+  }
+  g.globalAlpha=1;
+  for(let i=0;i<S*S/45;i++){g.fillStyle=Math.random()<.5?'rgba(255,255,255,.55)':'rgba(40,30,20,.05)';g.fillRect(Math.random()*S,Math.random()*S,1+Math.random()*1.5*k,k);}
+  return c;
+}
+const texCache={};
+function crayonTex(hex,opt){const key=hexs(hex)+JSON.stringify(opt||{});if(texCache[key])return texCache[key];
+  const t=new THREE.CanvasTexture(crayonCanvas(hex,opt));t.wrapS=t.wrapT=THREE.RepeatWrapping;t.encoding=THREE.sRGBEncoding;return texCache[key]=t;}
+function wobbleRect(g,x,y,w,h,j){
+  const pts=[],seg=10,r=()=>(Math.random()-.5)*j;
+  for(let i=0;i<=seg;i++)pts.push([x+w*i/seg,y+r()]);
+  for(let i=1;i<=seg;i++)pts.push([x+w+r(),y+h*i/seg]);
+  for(let i=1;i<=seg;i++)pts.push([x+w-w*i/seg,y+h+r()]);
+  for(let i=1;i<seg;i++)pts.push([x+r(),y+h-h*i/seg]);
+  g.beginPath();g.moveTo(pts[0][0],pts[0][1]);pts.forEach(p=>g.lineTo(p[0],p[1]));g.closePath();
+}
+function scribbleIn(g,col,n,S,len){g.save();g.clip();g.strokeStyle=col;g.lineCap='round';
+  for(let i=0;i<n;i++){g.globalAlpha=.3+Math.random()*.45;g.lineWidth=3+Math.random()*4;const x=Math.random()*S,y=Math.random()*S;g.beginPath();g.moveTo(x,y);g.lineTo(x+(len||26),y-(len||26)*.55);g.stroke();}
+  g.restore();g.globalAlpha=1;}
+function kidLabel(title,sub,col,w){
+  w=w||512;const H=150,c=document.createElement('canvas');c.width=w;c.height=H;const g=c.getContext('2d');
+  wobbleRect(g,8,8,w-16,H-16,6);g.fillStyle='#fffaf0';g.fill();
+  g.save();g.clip();g.strokeStyle=col;g.lineCap='round';
+  for(let i=0;i<Math.round(w/7);i++){g.globalAlpha=.5+Math.random()*.4;g.lineWidth=3+Math.random()*3;const x=Math.random()*(w+20)-20;g.beginPath();g.moveTo(x,6);g.lineTo(x+16,30);g.stroke();}
+  g.restore();g.globalAlpha=1;
+  wobbleRect(g,8,8,w-16,H-16,6);g.lineWidth=4.5;g.strokeStyle=INKC;g.lineJoin='round';g.stroke();
+  let fs=60;g.font=`700 ${fs}px "Gaegu","Patrick Hand",cursive`;while(g.measureText(title).width>w-48&&fs>30){fs-=2;g.font=`700 ${fs}px "Gaegu","Patrick Hand",cursive`;}
+  g.fillStyle=INKC;g.fillText(title,26,88);
+  let ss=36;g.font=`${ss}px "Patrick Hand","Gaegu",cursive`;while(g.measureText(sub).width>w-48&&ss>22){ss-=2;g.font=`${ss}px "Patrick Hand","Gaegu",cursive`;}
+  g.fillStyle='#5b5560';g.fillText(sub,26,128);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));const h=1.05;s.scale.set(h*w/H,h,1);return s;
+}
+/* Pip, the packet mascot: a smiley envelope, a wrapped parcel, a news postcard, a sad dropped note, and a little tunnel star */
+function face(g,cx,cy,sad){
+  g.fillStyle=INKC;[[-24,0],[24,0]].forEach(o=>{g.beginPath();g.arc(cx+o[0],cy+o[1],9,0,Math.PI*2);g.fill();});
+  g.fillStyle='rgba(232,93,117,.45)';[[-44,16],[44,16]].forEach(o=>{g.beginPath();g.arc(cx+o[0],cy+o[1],10,0,Math.PI*2);g.fill();});
+  g.strokeStyle=INKC;g.lineWidth=6;g.lineCap='round';g.beginPath();
+  if(sad)g.arc(cx,cy+40,18,1.15*Math.PI,1.85*Math.PI);else g.arc(cx,cy+8,20,.15*Math.PI,.85*Math.PI);g.stroke();
+  if(sad){g.fillStyle='#2fa3d6';g.beginPath();g.moveTo(cx+30,cy+12);g.quadraticCurveTo(cx+22,cy+30,cx+30,cy+34);g.quadraticCurveTo(cx+38,cy+30,cx+30,cy+12);g.fill();}
+}
+function pipTex(kind){
+  const S=256,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.lineJoin='round';g.lineCap='round';
+  if(kind==='star'){
+    g.beginPath();for(let i=0;i<10;i++){const r=i%2?46:110,a=-Math.PI/2+i*Math.PI/5;g.lineTo(128+Math.cos(a)*r,128+Math.sin(a)*r);}g.closePath();
+    g.fillStyle='#ffe27a';g.fill();scribbleIn(g,'#f2c21b',90,S);
+    g.beginPath();for(let i=0;i<10;i++){const r=i%2?46:110,a=-Math.PI/2+i*Math.PI/5;g.lineTo(128+Math.cos(a)*r,128+Math.sin(a)*r);}g.closePath();g.lineWidth=8;g.strokeStyle=INKC;g.stroke();
+  }else if(kind==='wrap'){
+    wobbleRect(g,80,26,96,64,3);g.fillStyle='#fffdf6';g.fill();g.lineWidth=5;g.strokeStyle=INKC;g.stroke();
+    wobbleRect(g,20,70,216,156,5);g.fillStyle='#f8b26a';g.fill();scribbleIn(g,'#e2741c',170,S);
+    wobbleRect(g,20,70,216,156,5);g.lineWidth=7;g.strokeStyle=INKC;g.stroke();
+    g.fillStyle='rgba(255,255,255,.55)';g.save();g.translate(128,74);g.rotate(-.06);g.fillRect(-40,-12,80,24);g.restore();
+    face(g,128,150,false);
+  }else{
+    const fill=kind==='card'?'#ece0fb':kind==='sad'?'#fbd3cf':'#fffdf6',scr=kind==='card'?'#b79be6':kind==='sad'?'#e04848':'#efdcb4';
+    wobbleRect(g,26,56,204,150,5);g.fillStyle=fill;g.fill();scribbleIn(g,scr,kind==='note'?50:110,S);
+    wobbleRect(g,26,56,204,150,5);g.lineWidth=7;g.strokeStyle=INKC;g.stroke();
+    if(kind==='card'){wobbleRect(g,170,68,46,40,2);g.fillStyle='#f28c28';g.fill();g.lineWidth=4;g.stroke();}
+    else{g.beginPath();g.moveTo(32,62);g.lineTo(128,118);g.lineTo(224,62);g.lineWidth=5;g.stroke();}
+    face(g,128,152,kind==='sad');
+  }
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;
+}
+const PIP={note:pipTex('note'),wrap:pipTex('wrap'),card:pipTex('card'),sad:pipTex('sad'),star:pipTex('star')};
+function cloudTex(){const c=document.createElement('canvas');c.width=320;c.height=170;const g=c.getContext('2d');
+  const B=[[90,105,52],[150,80,64],[215,100,54],[260,120,38],[60,128,34],[160,128,48]];
+  g.fillStyle=INKC;B.forEach(b=>{g.beginPath();g.arc(b[0],b[1],b[2]+6,0,Math.PI*2);g.fill();});
+  g.fillStyle='#ffffff';B.forEach(b=>{g.beginPath();g.arc(b[0],b[1],b[2],0,Math.PI*2);g.fill();});
+  g.globalCompositeOperation='source-atop';g.strokeStyle='#bfe0f2';g.lineCap='round';for(let i=0;i<120;i++){g.globalAlpha=.35;g.lineWidth=3;const x=Math.random()*320,y=Math.random()*170;g.beginPath();g.moveTo(x,y);g.lineTo(x+20,y-10);g.stroke();}
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;}
+function sunTex(){const S=256,c=document.createElement('canvas');c.width=c.height=S;const g=c.getContext('2d');g.lineCap='round';
+  g.strokeStyle='#f2a11b';g.lineWidth=9;for(let i=0;i<12;i++){const a=i*Math.PI/6;g.beginPath();g.moveTo(128+Math.cos(a)*78,128+Math.sin(a)*78);g.lineTo(128+Math.cos(a)*118,128+Math.sin(a)*118);g.stroke();}
+  g.beginPath();g.arc(128,128,62,0,Math.PI*2);g.fillStyle='#ffd84a';g.fill();scribbleIn(g,'#f2a11b',120,S);
+  g.beginPath();g.arc(128,128,62,0,Math.PI*2);g.lineWidth=7;g.strokeStyle=INKC;g.stroke();face(g,128,118,false);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;return t;}
+
 /* ---------------- three.js scene ---------------- */
 const view=$('view');
 const scene=new THREE.Scene();
@@ -558,12 +812,15 @@ renderer.xr.enabled=true;
 renderer.xr.setReferenceSpaceType('local-floor');
 view.appendChild(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xdedede,0x1a1a1a,0.85));
-const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(6,24,14);scene.add(dl);
+const techL=new THREE.Group(),kidL=new THREE.Group();scene.add(techL,kidL);
+techL.add(new THREE.HemisphereLight(0xdedede,0x1a1a1a,0.85));
+const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(6,24,14);techL.add(dl);
+kidL.add(new THREE.AmbientLight(0xffffff,0.78));const kdl=new THREE.DirectionalLight(0xffffff,0.45);kdl.position.set(8,20,16);kidL.add(kdl);kidL.visible=false;
 
 const underG=new THREE.Group(),overG=new THREE.Group();scene.add(underG,overG);
-const floor=new THREE.GridHelper(44,44,0x333333,0x262626);floor.position.y=-0.02;underG.add(floor);
-const og=new THREE.GridHelper(30,30,COL.over,COL.over);og.position.y=17;og.material.transparent=true;og.material.opacity=0.07;overG.add(og);
+const techU=new THREE.Group(),kidU=new THREE.Group(),techO=new THREE.Group(),kidO=new THREE.Group();underG.add(techU,kidU);overG.add(techO,kidO);kidU.visible=kidO.visible=false;
+const floor=new THREE.GridHelper(44,44,0x333333,0x262626);floor.position.y=-0.02;techU.add(floor);
+const og=new THREE.GridHelper(30,30,COL.over,COL.over);og.position.y=17;og.material.transparent=true;og.material.opacity=0.07;techO.add(og);
 
 function glowTex(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.25,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
 const GLOW=glowTex();
@@ -591,30 +848,30 @@ function build(){
       g.add(new THREE.Mesh(new THREE.BoxGeometry(3,.5,1.5),chassis));
       const stripe=new THREE.Mesh(new THREE.BoxGeometry(3,.07,.02),mat(n.t==='spine'?COL.gbp:COL.brand));stripe.position.set(0,-.17,.76);g.add(stripe);
       for(let i=0;i<10;i++){const l=new THREE.Mesh(new THREE.BoxGeometry(.13,.08,.02),mat(n.t==='spine'?COL.gbp:COL.under));l.position.set(-1.2+i*.27,.07,.76);g.add(l);}
-      const lb=label(n.n,n.s,n.t==='leaf'?CSS.brand:CSS.gbp);lb.position.set(0,1.15,0);g.add(lb);underG.add(g);
+      const lb=label(n.n,n.s,n.t==='leaf'?CSS.brand:CSS.gbp);lb.position.set(0,1.15,0);g.add(lb);techU.add(g);
     }else if(n.t==='host'){
       const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.7,1.1),hostM);b.position.y=.85;g.add(b);
       const bz=new THREE.Mesh(new THREE.BoxGeometry(1.1,.12,.02),mat(COL.brand));bz.position.set(0,1.55,.56);g.add(bz);
       for(let i=0;i<3;i++){const l=new THREE.Mesh(new THREE.BoxGeometry(.7,.05,.02),mat(0x3a3a3a));l.position.set(0,1.2-i*.2,.56);g.add(l);}
-      const lb=label(n.n,n.s,id==='HD'?CSS.esi:CSS.brand,460);lb.position.set(0,-.75,.4);g.add(lb);underG.add(g);
+      const lb=label(n.n,n.s,id==='HD'?CSS.esi:CSS.brand,460);lb.position.set(0,-.75,.4);g.add(lb);techU.add(g);
     }else{
       const ring=new THREE.Mesh(new THREE.TorusGeometry(.75,.09,10,40),mat(COL.over));ring.rotation.x=Math.PI/2;g.add(ring);
       g.add(glow(COL.over,1.6));
-      const lb=label(n.n,n.s,CSS.over,400);lb.position.set(0,1.05,0);g.add(lb);overG.add(g);
+      const lb=label(n.n,n.s,CSS.over,400);lb.position.set(0,1.05,0);g.add(lb);techO.add(g);
     }
   }
   const cab=new THREE.MeshStandardMaterial({color:COL.under,emissive:COL.under,emissiveIntensity:.3,roughness:.6});
   const esiCab=new THREE.MeshStandardMaterial({color:COL.esi,emissive:COL.esi,emissiveIntensity:.45,roughness:.6});
-  [['HA','L1'],['HC','L3'],['HB','L4']].forEach(([a,b])=>underG.add(tube(attach(a),attach(b),.05,cab)));
-  [['HD','L2'],['HD','L3']].forEach(([a,b])=>underG.add(tube(attach(a),attach(b),.07,esiCab)));
-  const es=label('ESI-LAG ae0','00:11:22:…:88:99',CSS.esi,440);es.position.set(0,4.2,4.3);underG.add(es);
-  ['L1','L2','L3','L4'].forEach(l=>['S1','S2'].forEach(s=>underG.add(tube(attach(l),attach(s),.06,cab))));
+  [['HA','L1'],['HC','L3'],['HB','L4']].forEach(([a,b])=>techU.add(tube(attach(a),attach(b),.05,cab)));
+  [['HD','L2'],['HD','L3']].forEach(([a,b])=>techU.add(tube(attach(a),attach(b),.07,esiCab)));
+  const es=label('ESI-LAG ae0','00:11:22:…:88:99',CSS.esi,440);es.position.set(0,4.2,4.3);techU.add(es);
+  ['L1','L2','L3','L4'].forEach(l=>['S1','S2'].forEach(s=>techU.add(tube(attach(l),attach(s),.06,cab))));
   for(let i=1;i<=4;i++){
     const a=attach('L'+i),b=attach('V'+i);a.y+=.3;
-    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineDashedMaterial({color:COL.over,dashSize:.35,gapSize:.3,transparent:true,opacity:.45}));ln.computeLineDistances();overG.add(ln);
+    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineDashedMaterial({color:COL.over,dashSize:.35,gapSize:.3,transparent:true,opacity:.45}));ln.computeLineDistances();techO.add(ln);
   }
-  const ul=label('UNDERLAY','IP fabric · eBGP · ECMP',CSS.under,620);ul.position.set(-15.5,7,-3);underG.add(ul);
-  const ol=label('OVERLAY','EVPN · VXLAN tunnels',CSS.over,620);ol.position.set(-15.5,17.6,0);overG.add(ol);
+  const ul=label('UNDERLAY','IP fabric · eBGP · ECMP',CSS.under,620);ul.position.set(-15.5,7,-3);techU.add(ul);
+  const ol=label('OVERLAY','EVPN · VXLAN tunnels',CSS.over,620);ol.position.set(-15.5,17.6,0);techO.add(ol);
 }
 
 const tunnels={};
@@ -631,23 +888,78 @@ function buildTunnels(){
 }
 function tun(a,b){const k=a<b?a+'-'+b:b+'-'+a;return {t:tunnels[k],rev:a>b};}
 
+/* ---------------- crayon mode: 3D scene ---------------- */
+const inkM=new THREE.MeshBasicMaterial({color:0x2d2a32,side:THREE.BackSide});
+const kmC={};const km=hex=>kmC[hex]||(kmC[hex]=new THREE.MeshLambertMaterial({map:crayonTex(hex)}));
+let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function kbox(w,h,d,mat,parent,pos){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat),o=new THREE.Mesh(m.geometry,inkM),t=.1;
+  o.scale.set((w+t)/w,(h+t)/h,(d+t)/d);m.add(o);if(pos)m.position.set(pos[0],pos[1],pos[2]);
+  m.rotation.z=(rnd()-.5)*.05;m.rotation.y=(rnd()-.5)*.04;parent.add(m);return m;}
+function ktube(a,b,r,mat){const m=tube(a,b,r,mat);const o=tube(a,b,r+.05,inkM);const g=new THREE.Group();g.add(m,o);return g;}
+const SCRIB=(()=>{const t=new THREE.CanvasTexture(crayonCanvas(0x8a8a8a,{paper:'#ffffff'}));t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,1);t.encoding=THREE.sRGBEncoding;return t;})();
+const PAPER=(()=>{const t=new THREE.CanvasTexture(crayonCanvas('#ebe0c8',{paper:'#fbf3df',dens:.035,size:512}));t.encoding=THREE.sRGBEncoding;return t;})();
+function buildKid(){
+  const houseCol={HA:0xe85d75,HB:0x5cae3a,HC:0xf2c21b,HD:0x8e5bd1},roofCol={HA:0xd8473f,HB:0x2f6fd6,HC:0xd8473f,HD:0xf28c28};
+  for(const id in N){
+    const n=N[id],nk=NK[id],g=new THREE.Group();g.position.copy(V3(n.p));
+    if(n.t==='leaf'){
+      kbox(2.8,.9,1.4,km(0xf3e3c3),g,[0,0,0]);
+      kbox(3.1,.2,1.65,km(0xd8473f),g,[0,.56,0]);
+      kbox(.62,.56,.05,km(0x2f6fd6),g,[0,-.12,.72]);
+      [-.92,.92].forEach(x=>kbox(.46,.3,.05,km(0x9fd3f0),g,[x,.08,.72]));
+      kbox(.5,.08,.05,km(0x2d2a32),g,[0,.26,.73]);
+      const lb=kidLabel(nk[1],nk[2],KCSS.brand);lb.position.set(0,1.35,0);g.add(lb);kidU.add(g);
+    }else if(n.t==='spine'){
+      kbox(3.2,1,1.7,km(0x8fb0d6),g,[0,0,0]);
+      kbox(3.26,.2,1.76,km(0xf28c28),g,[0,.12,0]);
+      [-1.05,-.45].forEach(x=>kbox(.32,.55,.32,km(0x8fb0d6),g,[x,.78,-.45]));
+      [-1,0,1].forEach(x=>kbox(.55,.36,.05,km(0x5b5560),g,[x,-.24,.86]));
+      const lb=kidLabel(nk[1],nk[2],KCSS.ctrl);lb.position.set(0,1.6,0);g.add(lb);kidU.add(g);
+    }else if(n.t==='host'){
+      kbox(1.3,1.3,1.2,km(houseCol[id]),g,[0,.65,0]);
+      const roof=new THREE.Mesh(new THREE.ConeGeometry(1.08,.95,4),km(roofCol[id]));roof.rotation.y=Math.PI/4;roof.position.y=1.76;
+      const ro=new THREE.Mesh(roof.geometry,inkM);ro.scale.setScalar(1.1);roof.add(ro);g.add(roof);
+      kbox(.34,.58,.04,km(0x8a5a35),g,[-.25,.3,.61]);kbox(.32,.3,.04,km(0x9fd3f0),g,[.3,.85,.61]);
+      const lb=kidLabel(nk[1],nk[2],id==='HD'?KCSS.esi:hexs(houseCol[id]),460);lb.position.set(0,-.75,.4);g.add(lb);kidU.add(g);
+    }else{
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.75,.12,10,40),km(KCOL.over));ring.rotation.x=Math.PI/2;
+      const ro=new THREE.Mesh(new THREE.TorusGeometry(.75,.18,10,40),inkM);ring.add(ro);g.add(ring);
+      const lb=kidLabel(nk[1],nk[2],KCSS.over,400);lb.position.set(0,1.05,0);g.add(lb);kidO.add(g);
+    }
+  }
+  [['HA','L1'],['HC','L3'],['HB','L4']].forEach(([a,b])=>kidU.add(ktube(attach(a),attach(b),.08,km(KCOL.under))));
+  [['HD','L2'],['HD','L3']].forEach(([a,b])=>kidU.add(ktube(attach(a),attach(b),.1,km(KCOL.esi))));
+  const es=kidLabel('Team Dot','two driveways, one team',KCSS.esi,460);es.position.set(0,4.2,4.3);kidU.add(es);
+  ['L1','L2','L3','L4'].forEach(l=>['S1','S2'].forEach(s=>kidU.add(ktube(attach(l),attach(s),.09,km(0xc98a4b)))));
+  for(let i=1;i<=4;i++){const a=attach('L'+i),b=attach('V'+i);a.y+=.6;
+    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineDashedMaterial({color:0x2d2a32,dashSize:.3,gapSize:.35,transparent:true,opacity:.5}));ln.computeLineDistances();kidO.add(ln);}
+  const ul=kidLabel('THE ROADS','trucks carry big envelopes (underlay)',KCSS.under,680);ul.position.set(-15.5,7,-3);kidU.add(ul);
+  const ol=kidLabel('SECRET TUNNELS','shortcuts between post offices (overlay)',KCSS.over,700);ol.position.set(-15.5,17.6,0);kidO.add(ol);
+  const gt=crayonTex(0x8cc65a,{paper:'#eef6dc'}).clone();gt.needsUpdate=true;gt.repeat.set(7,5);
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(70,50),new THREE.MeshLambertMaterial({map:gt}));ground.rotation.x=-Math.PI/2;ground.position.y=-.04;kidU.add(ground);
+  const ct=cloudTex();[[-12,22,-12,7],[8,24,-14,8.5],[22,19.5,-8,6],[-24,15,-10,6]].forEach(p=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ct,transparent:true,depthWrite:false}));s.position.set(p[0],p[1],p[2]);s.scale.set(p[3],p[3]*.53,1);kidO.add(s);});
+  const sun=new THREE.Sprite(new THREE.SpriteMaterial({map:sunTex(),transparent:true,depthWrite:false}));sun.position.set(13,24,-18);sun.scale.set(6,6,1);kidO.add(sun);
+}
+
+
 function makePacket(){
   const g=new THREE.Group();
   const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.32,1),new THREE.MeshStandardMaterial({color:0xffffff,emissive:COL.over,emissiveIntensity:1.2,roughness:.3}));
   const shell=new THREE.Mesh(new THREE.IcosahedronGeometry(.66,1),new THREE.MeshBasicMaterial({color:COL.under,wireframe:true,transparent:true,opacity:.85}));
-  const gl=glow(COL.over,2.2);g.add(core,shell,gl);g.userData={core,shell,gl};shell.scale.setScalar(.001);return g;
+  const gl=glow(COL.over,2.2);const kid=new THREE.Sprite(new THREE.SpriteMaterial({map:PIP.note,depthTest:false,depthWrite:false,transparent:true}));kid.scale.set(1.9,1.9,1);kid.renderOrder=10;kid.visible=false;g.add(core,shell,gl,kid);g.userData={core,shell,gl,kid};shell.scale.setScalar(.001);return g;
 }
 function tint(p,hex){p.userData.core.material.emissive.setHex(hex);p.userData.gl.material.color.setHex(hex);}
 const packet=makePacket();scene.add(packet);
 const clones=[0,1,2].map(()=>{const p=makePacket();p.scale.setScalar(.8);scene.add(p);p.visible=false;return p;});
-const ghosts=[0,1,2].map(()=>{const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.SphereGeometry(.3,16,12),new THREE.MeshBasicMaterial({color:0xffffff})));const gl=glow(COL.over,2.4);g.add(gl);g.userData.gl=gl;overG.add(g);g.visible=false;return g;});
+const ghosts=[0,1,2].map(()=>{const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.SphereGeometry(.3,16,12),new THREE.MeshBasicMaterial({color:0xffffff})));const gl=glow(COL.over,2.4);g.add(gl);g.userData.gl=gl;const kd=new THREE.Sprite(new THREE.SpriteMaterial({map:PIP.star,depthTest:false,depthWrite:false,transparent:true}));kd.scale.set(1.15,1.15,1);kd.renderOrder=9;kd.visible=false;g.add(kd);g.userData.kid=kd;overG.add(g);g.visible=false;return g;});
 const active=new THREE.Mesh(new THREE.TorusGeometry(1.9,.05,8,64),new THREE.MeshBasicMaterial({color:COL.over,transparent:true,opacity:.8}));active.rotation.x=Math.PI/2;scene.add(active);
 
 /* GBP tag ring that orbits the packet */
 const tagG=new THREE.Group();scene.add(tagG);
 const tagRing=new THREE.Mesh(new THREE.TorusGeometry(.92,.045,8,48),new THREE.MeshBasicMaterial({color:COL.gbp}));tagG.add(tagRing);
 const tagSprites={};let tagSprite=null;
-function tagLabel(t){if(!tagSprites[t]){const s=label('GBP '+t,t==='100'?'IoT camera':t==='200'?'point of sale':'group',CSS.gbp,360);s.scale.multiplyScalar(.55);s.position.set(1.4,.5,0);tagSprites[t]=s;tagG.add(s);}return tagSprites[t];}
+function tagLabel(t){const key=(KID?'k':'t')+t;if(!tagSprites[key]){const s=KID?kidLabel('Sticker '+t,t==='100'?'Camera':t==='200'?'Cash register':'group',KCSS.gbp,380):label('GBP '+t,t==='100'?'IoT camera':t==='200'?'point of sale':'group',CSS.gbp,360);s.scale.multiplyScalar(.55);s.position.set(1.4,.5,0);if(KID){s.material.depthTest=false;s.renderOrder=11;}tagSprites[key]=s;tagG.add(s);}return tagSprites[key];}
 
 const TRAIL=70,trailPts=new Float32Array(TRAIL*3),trailGeo=new THREE.BufferGeometry();
 trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3));
@@ -674,9 +986,7 @@ const stopPos=i=>attach(sc.stops[i].at);
 
 function loadScenario(i){
   sc=SC[i];cur=0;moving=false;legT=0;dwell=0;resetTrail();
-  const c=COL[sc.color];
-  trail.material.color.setHex(c);clones.forEach(p=>tint(p,c));ghosts.forEach(g=>g.userData.gl.material.color.setHex(c));active.material.color.setHex(c);
-  document.documentElement.style.setProperty('--accent',CSS[sc.color]);
+  paint();
   packet.position.copy(stopPos(0));packet.visible=true;
   document.querySelectorAll('#scen button').forEach(b=>b.setAttribute('aria-selected',+b.dataset.i===i));
   $('scenSel').value=i;
@@ -693,21 +1003,26 @@ function arrive(){dwell=0;renderPanel();updateTimeline();drawVR();
 
 /* ---------------- UI ---------------- */
 const GROUPS=['Forwarding','EVPN & multihoming','Segmentation'];
-GROUPS.forEach((gname,gi)=>{const row=document.createElement('div');row.className='grp';row.innerHTML=`<span>${gname}</span>`;
-  SC.forEach((s,i)=>{if(s.grp!==gi)return;const b=document.createElement('button');b.setAttribute('role','tab');b.dataset.i=i;
-    b.innerHTML=`<i style="background:${CSS[s.color]}"></i>${s.tab}`;b.onclick=()=>loadScenario(i);row.appendChild(b);});
-  $('scen').appendChild(row);
-  const og=document.createElement('optgroup');og.label=gname;SC.forEach((s,i)=>{if(s.grp===gi){const o=document.createElement('option');o.value=i;o.textContent=s.tab;og.appendChild(o);}});$('scenSel').appendChild(og);});
+function buildTabs(){const scen=$('scen'),sel=$('scenSel'),ci=SC.indexOf(sc);scen.innerHTML='';sel.innerHTML='';
+  (KID?KGROUPS:GROUPS).forEach((gname,gi)=>{const row=document.createElement('div');row.className='grp';row.innerHTML=`<span>${gname}</span>`;
+    const og=document.createElement('optgroup');og.label=gname;
+    SC.forEach((s,i)=>{if(s.grp!==gi)return;const nm=KID?KTAB[s.id]:s.tab;const b=document.createElement('button');b.setAttribute('role','tab');b.dataset.i=i;b.setAttribute('aria-selected',i===ci);
+      b.innerHTML=`<i style="background:${CS(s.color)}"></i>${nm}`;b.onclick=()=>loadScenario(i);row.appendChild(b);
+      const o=document.createElement('option');o.value=i;o.textContent=nm;og.appendChild(o);});
+    scen.appendChild(row);sel.appendChild(og);});
+  sel.value=ci;}
+buildTabs();
 $('scenSel').onchange=e=>loadScenario(+e.target.value);
 
 function buildTimeline(){const tl=$('timeline');tl.innerHTML='';sc.stops.forEach((s,i)=>{const pv=sc.stops[i-1]||{};const b=document.createElement('button');
-  const tag=s.drop?' · drop':s.shell&&!pv.shell?' · encap':!s.shell&&pv.shell?' · decap':'';
-  b.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="t">${N[s.at].n}${tag}</span>`;
+  const tag=s.drop?(KID?' · stopped':' · drop'):s.shell&&!pv.shell?(KID?' · wrap':' · encap'):!s.shell&&pv.shell?(KID?' · unwrap':' · decap'):'';
+  b.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="t">${KID?NK[s.at][0]:N[s.at].n}${tag}</span>`;
   b.onclick=()=>jump(i);tl.appendChild(b);});}
 function updateTimeline(){[...$('timeline').children].forEach((b,i)=>{b.className=i<cur?'done':i===cur?'cur':'';});}
 const DEFC={oeth:'under',oip:'under',udp:'under',vx:'vx',bgp:'ctrl'};
 function rowClass(h){return 'c-'+(h.c||DEFC[h.k]||'over');}
 function renderPanel(){
+  if(KID)return renderKidPanel();
   const s=sc.stops[cur],n=N[s.at];
   const rows=s.h.map(h=>{const tag=h.st==='new'?'added':h.st==='changed'?'rewritten':h.st==='gone'?'removed':'';
     return `<div class="hdr ${rowClass(h)}${h.st==='gone'?' gone':''}"><div class="hn">${h.nm}${h.b?`<small>${h.b} B</small>`:''}${tag?`<em>${tag}</em>`:''}</div><dl>${h.f.map(f=>`<dt>${f[0]}</dt><dd>${f[1]}</dd>`).join('')}</dl></div>`;}).join('');
@@ -724,6 +1039,7 @@ function renderPanel(){
 function wrap(g,text,x,y,maxW,lh){const words=text.split(' ');let line='';for(const w of words){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){g.fillText(line,x,y);y+=lh;line=w;}else line=t;}if(line){g.fillText(line,x,y);y+=lh;}return y;}
 const VRC={under:CSS.under,vx:'#00e8cf',ctrl:CSS.ctrl,esi:CSS.esi,gbp:CSS.gbp,l3:CSS.l3,over:CSS.over,drop:CSS.drop};
 function drawVR(){
+  if(KID)return drawVRKid();
   const g=vrCanvas.getContext('2d'),s=sc.stops[cur],n=N[s.at];
   g.clearRect(0,0,1024,1024);g.fillStyle='rgba(34,34,34,.95)';g.fillRect(0,0,1024,1024);
   g.fillStyle=CSS[sc.color];g.fillRect(0,0,1024,10);
@@ -738,6 +1054,85 @@ function drawVR(){
   g.globalAlpha=1;g.fillStyle='#727272';g.font='26px "IBM Plex Mono",monospace';g.fillText('Trigger: next hop   ·   Grip: ride / overview',40,1000);
   vrTex.needsUpdate=true;
 }
+
+/* ---------------- crayon mode: panel, VR card, switching ---------------- */
+const WHO={'10.1.10.11':'Amy','10.1.10.22':'Ben','10.1.20.33':'Cleo','10.1.10.44':'Dot','10.1.10.99':'10.1.10.99'};
+const who=a=>WHO[a]||(a==='(various)'?'lots of places':a);
+const place=a=>{const m=/^10\.0\.0\.(\d+)$/.exec(a||'');if(!m)return a;const n=+m[1];return n<=4?'Post Office '+n:'Highway Hub '+(n-10);};
+const fv=(h,k)=>{const f=h.f.find(x=>x[0]===k);return f?String(f[1]):'';};
+const tunnelName=v=>/50001/.test(v)?'whole-town tunnel':/10020/.test(v)?'Oak Street tunnel':'Maple Street tunnel';
+function newsLine(b){
+  const r=fv(b,'route');
+  if(/LACP/.test(b.nm))return "Dot's computer: “Two driveways, one team!”";
+  if(/DF result/.test(b.nm))return 'Post Office 3: “On Maple Street I stay quiet. Post Office 2 delivers.”';
+  if(/Type-4/.test(r))return place(fv(b,'originator IP'))+': “I\'m on Team Dot!”';
+  if(/Type-1/.test(b.nm))return place(fv(b,'next hop'))+': “I\'m on Team Dot too!”';
+  const ip=fv(b,'IP'),esi=fv(b,'ESI'),tag=fv(b,'GBP tag');
+  if(ip)return `“${who(ip)} ${esi&&!/^0/.test(esi)?'lives with Team Dot':'gets mail through '+place(fv(b,'next hop'))}${tag?', sticker '+tag.split(' ')[0]:''}”`;
+  return '“News for the address books”';
+}
+function kidCarry(s){
+  const h=s.h,news=h.filter(x=>x.k==='bgp');
+  if(news.length){
+    const t=h.find(x=>x.nm==='IPv4 (underlay)');
+    const cards=news.map(b=>`<div class="note card">${newsLine(b)}</div>`).join('');
+    return t?`<div class="env post"><b>Postcard trip: ${place(fv(t,'src'))} → ${place(fv(t,'dst'))}</b><small>News rides the roads, not the tunnels</small>${cards}</div>`:cards;
+  }
+  const outer=h.find(x=>x.nm==='Outer IPv4'),vxh=h.find(x=>x.k==='vx'),inner=h.find(x=>x.k==='iip'),pay=h.find(x=>x.k==='pay'),e=h.find(x=>x.k==='ieth');
+  let note='';
+  if(pay&&/ARP/.test(pay.nm))note=/Gratuitous/.test(pay.nm)?'Ben: “Hi, I\'m Ben, and I live here!”':`Shout: “Who is ${who(pay.f[0][1])}?”`;
+  else if(inner)note=`Note from ${who(fv(inner,'src'))} to ${who(fv(inner,'dst'))}`;
+  else if(e&&/EAPOL/.test(fv(e,'type')))note='Badge check: “I\'m a cash register!”';
+  const nh=note?`<div class="note">${note}</div>`:'';
+  if(outer&&vxh){
+    const open=outer.st==='gone',gp=fv(vxh,'group policy ID');
+    return `<div class="env${open?' open':''}"><b>${open?'Big envelope: opened and recycled':'Big envelope: '+place(fv(outer,'src'))+' → '+place(fv(outer,'dst'))}</b><small>${tunnelName(fv(vxh,'VNI'))}${gp?' · sticker '+gp+' written outside':''}</small>${open?'':nh}</div>${open?nh:''}`;
+  }
+  return nh;
+}
+const stickerName=t=>t==='100'?'Camera':t==='200'?'Cash register':'group';
+function renderKidPanel(){
+  const s=sc.stops[cur],k=s.k||{t:s.t,d:s.d},nk=NK[s.at];
+  const book=k.l?`<div class="book"><span class="bk">${nk[1]}'s address book</span>${k.l.map(r=>`<div><b>${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`:'';
+  const cmp=k.c?`<div class="cmpwrap"><table class="cmp"><thead><tr>${k.c.head.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${k.c.rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'';
+  const carry=kidCarry(s);
+  $('panel').innerHTML=`<div class="eyebrow">Stop ${cur+1} of ${sc.stops.length} · ${nk[1]}</div>
+   ${s.tag?`<span class="stk">Sticker ${s.tag}: ${stickerName(s.tag)}</span>`:''}
+   <h2>${k.t}</h2>${(k.drop||s.drop)?`<div class="drop">${k.drop||s.drop}</div>`:''}<p>${k.d}</p>${book}
+   ${carry?`<div class="k-carry"><span class="k-lbl">What Pip is carrying</span>${carry}</div>`:''}${cmp}${k.n?`<div class="k-note">${k.n}</div>`:''}`;
+  $('panel').scrollTop=0;
+}
+function drawVRKid(){
+  const g=vrCanvas.getContext('2d'),s=sc.stops[cur],k=s.k||{t:s.t,d:s.d},nk=NK[s.at];
+  g.clearRect(0,0,1024,1024);g.drawImage(PAPER.image,0,0,1024,1024);
+  g.fillStyle=KCSS[sc.color];g.fillRect(0,0,1024,18);
+  g.fillStyle='#5b5560';g.font='700 36px "Gaegu",cursive';g.fillText(`Stop ${cur+1} of ${sc.stops.length} · ${nk[1]}${s.tag?' · sticker '+s.tag:''}`,40,72);
+  g.fillStyle=INKC;g.font='700 66px "Gaegu",cursive';let y=wrap(g,k.t,40,150,944,64);
+  if(k.drop||s.drop){g.fillStyle=KCSS.drop;g.font='700 42px "Gaegu",cursive';y=wrap(g,k.drop||s.drop,40,y+14,944,46);}
+  g.fillStyle=INKC;g.font='38px "Patrick Hand",cursive';y=wrap(g,k.d,40,y+28,944,46);
+  g.fillStyle='#8a8290';g.font='30px "Patrick Hand",cursive';g.fillText('Trigger: next stop   ·   Grip: ride along / bird\'s-eye',40,1000);
+  vrTex.needsUpdate=true;
+}
+function paint(){
+  const c=C(sc.color);
+  trail.material.color.setHex(c);clones.forEach(p=>tint(p,c));ghosts.forEach(g=>g.userData.gl.material.color.setHex(c));active.material.color.setHex(c);
+  document.documentElement.style.setProperty('--accent',CS(sc.color));
+}
+let built=false;
+function applyMode(k){
+  KID=!!k;document.body.classList.toggle('kid',KID);$('kid').setAttribute('aria-pressed',KID);
+  try{localStorage.setItem('vxride-crayon',KID?'1':'0');}catch(e){}
+  if(!built)return;
+  if(KID){scene.background=PAPER;scene.fog.color.setHex(0xfbf3df);}else{scene.background=new THREE.Color(0x1a1a1a);scene.fog.color.setHex(0x1a1a1a);}
+  techU.visible=techO.visible=techL.visible=!KID;kidU.visible=kidO.visible=kidL.visible=KID;
+  [packet].concat(clones).forEach(p=>{const u=p.userData;u.core.visible=u.shell.visible=u.gl.visible=!KID;u.kid.visible=KID;});
+  ghosts.forEach(g=>{g.children[0].visible=g.userData.gl.visible=!KID;g.userData.kid.visible=KID;});
+  for(const key in tunnels){const m=tunnels[key].mat;m.map=KID?SCRIB:null;m.needsUpdate=true;}
+  trail.material.opacity=KID?.8:.55;
+  Object.values(tagSprites).forEach(s=>s.visible=false);tagSprite=null;
+  paint();buildTabs();buildTimeline();updateTimeline();renderPanel();drawVR();
+}
+
 function setMode(m){mode=m;$('vRide').setAttribute('aria-pressed',m==='ride');$('vOver').setAttribute('aria-pressed',m==='over');
   if(renderer.xr.isPresenting)return;
   if(m==='over'){controls.enabled=true;camera.position.copy(overSaved.pos);controls.target.copy(overSaved.tgt);controls.update();}
@@ -748,7 +1143,8 @@ $('vRide').onclick=()=>setMode('ride');$('vOver').onclick=()=>setMode('over');
 $('tU').onclick=()=>{underG.visible=!underG.visible;$('tU').setAttribute('aria-pressed',underG.visible);};
 $('tO').onclick=()=>{overG.visible=!overG.visible;$('tO').setAttribute('aria-pressed',overG.visible);};
 $('speed').onchange=e=>{speed=parseFloat(e.target.value)||1;};
-addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.code==='Space'||e.key==='ArrowRight'){e.preventDefault();next();}else if(e.key==='ArrowLeft')prev();else if(e.key==='v'||e.key==='V')setMode(mode==='ride'?'over':'ride');});
+addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.code==='Space'||e.key==='ArrowRight'){e.preventDefault();next();}else if(e.key==='ArrowLeft')prev();else if(e.key==='v'||e.key==='V')setMode(mode==='ride'?'over':'ride');else if(e.key==='k'||e.key==='K')applyMode(!KID);});
+$('kid').onclick=()=>applyMode(!KID);
 let toastT;function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,6000);}
 
 /* ---------------- WebXR ---------------- */
@@ -781,33 +1177,35 @@ function tick(now){
   trailAcc+=dt;if(trailAcc>.03&&packet.visible){trailAcc=0;pushTrail(P);}
   /* packet appearance */
   const dropped=!moving&&st.drop;
-  tint(packet,dropped?COL.drop:COL[sc.color]);
+  tint(packet,dropped?C('drop'):C(sc.color));
   const sh=packet.userData.shell;
   const ns=THREE.MathUtils.lerp(sh.scale.x,st.shell?1:.001,1-Math.exp(-dt*6));sh.scale.setScalar(Math.max(.001,ns));sh.rotation.y+=dt*.6;sh.rotation.x+=dt*.25;
   packet.userData.core.rotation.y-=dt*1.2;
+  const pk=dropped?'sad':sh.scale.x>.5?'wrap':st.h.some(h=>h.k==='bgp')?'card':'note';
+  if(KID){const ks=packet.userData.kid;if(ks.material.map!==PIP[pk])ks.material.map=PIP[pk];ks.material.rotation=REDUCE?0:.09*Math.sin(now/260);const z=pk==='wrap'?2.3:1.9;ks.scale.set(z,z,1);}
   packet.scale.setScalar(dropped?(REDUCE?.6:.55+.12*Math.sin(now/120)):1);
   /* GBP tag */
   const tagNow=(moving&&tgt.jump)?null:(moving?(tgt.tag&&st.tag?st.tag:null):st.tag);
   tagG.visible=!!tagNow&&packet.visible;
   if(tagNow){tagG.position.copy(P);tagRing.rotation.x=Math.PI/2+.5*Math.sin(now/700);tagRing.rotation.z+=dt*1.5;
     const s=tagLabel(tagNow);if(tagSprite!==s){if(tagSprite)tagSprite.visible=false;tagSprite=s;}s.visible=true;
-    tagRing.material.color.setHex(dropped?COL.drop:COL.gbp);}
+    tagRing.material.color.setHex(dropped?C('drop'):C('gbp'));}
   const a=attach(st.at);active.position.set(a.x,N[st.at].t==='host'?.05:a.y-.32,a.z);
-  active.material.color.setHex(dropped?COL.drop:COL[sc.color]);
+  active.material.color.setHex(dropped?C('drop'):C(sc.color));
   if(!REDUCE)active.scale.setScalar(1+.06*Math.sin(now/300));
   /* overlay ghosts */
   const g=cur+(moving?ease(legT):0);
   ghosts.forEach(x=>x.visible=false);
-  for(const k in tunnels){tunnels[k].mat.opacity=.13;tunnels[k].mat.color.setHex(COL.over);}
+  for(const k in tunnels){tunnels[k].mat.opacity=KID?.3:.13;tunnels[k].mat.color.setHex(C('over'));}
   (sc.tunnels||[]).forEach((tu,i)=>{const {t,rev}=tun(tu.a,tu.b);if(g>=tu.from&&g<=tu.to){let f=(g-tu.from)/(tu.to-tu.from);if(rev)f=1-f;
-    t.mat.opacity=.55;t.mat.color.setHex(COL[sc.color]);if(ghosts[i]){ghosts[i].visible=true;ghosts[i].position.copy(t.curve.getPoint(f));}}});
-  if(st.hl&&!moving)st.hl.forEach(pr=>{const {t}=tun(pr[0],pr[1]);t.mat.opacity=.4+.25*Math.sin(now/250);t.mat.color.setHex(COL[sc.color]);});
+    t.mat.opacity=KID?.9:.55;t.mat.color.setHex(C(sc.color));if(ghosts[i]){ghosts[i].visible=true;ghosts[i].position.copy(t.curve.getPoint(f));}}});
+  if(st.hl&&!moving)st.hl.forEach(pr=>{const {t}=tun(pr[0],pr[1]);t.mat.opacity=.4+.25*Math.sin(now/250);t.mat.color.setHex(C(sc.color));});
   /* clones: [from,to,side,drop,stopFrac] */
   clones.forEach(c=>c.visible=false);
   const cs=moving?(tgt.clones||[]):(st.clones||[]);
   cs.forEach((c,i)=>{const cl=clones[i];if(!cl)return;cl.visible=true;const sf=c[4]||1;const e=moving?ease(legT):1;const f=e*sf;
     cl.position.lerpVectors(attach(c[0]),attach(c[1]),f);cl.position.z+=(c[2]?.45:-.45)*(1-Math.abs(2*e-1))*.6;
-    const isDrop=c[3]&&e>=.98;tint(cl,isDrop?COL.drop:COL[sc.color]);cl.scale.setScalar(isDrop?.55:.8);
+    const isDrop=c[3]&&e>=.98;tint(cl,isDrop?C('drop'):C(sc.color));cl.scale.setScalar(isDrop?.55:.8);if(KID){const m=cl.userData.kid.material,ck=isDrop?'sad':pk==='sad'?'note':pk;if(m.map!==PIP[ck])m.map=PIP[ck];}
     cl.userData.shell.scale.setScalar(Math.max(.001,sh.scale.x*(isDrop?0:1)));});
   /* camera */
   const k=1-Math.exp(-dt*(REDUCE?10:3));
@@ -822,10 +1220,14 @@ function tick(now){
   renderer.render(scene,camera);
 }
 
-const ready=Promise.race([Promise.all([document.fonts.load('600 60px "Barlow Condensed"'),document.fonts.load('31px "IBM Plex Mono"'),document.fonts.load('28px "IBM Plex Sans"')]).catch(()=>{}),new Promise(r=>setTimeout(r,1800))]);
-ready.then(()=>{build();buildTunnels();loadScenario(0);renderer.setAnimationLoop(tick);});
+/* scribble fills for the crayon-mode UI */
+[['--paper','#e8dcc0','#fffaf0',.07],['--scrib-green','#5cae3a','#dff1d3',1],['--scrib-yellow','#f2c21b','#fdf3c6',1],['--scrib-orange','#f28c28','#fde3c4',1],['--scrib-red','#e04848','#fbd6d3',1],['--scrib-purple','#8e5bd1','#ebe0fa',1]]
+  .forEach(([v,c,p,d])=>{try{document.documentElement.style.setProperty(v,`url(${crayonCanvas(c,{paper:p,dens:d,size:160}).toDataURL()})`);}catch(e){}});
+let startKid=/crayon|eli5/i.test(location.hash);
+if(!startKid){try{startKid=localStorage.getItem('vxride-crayon')==='1';}catch(e){}}
+const ready=Promise.race([Promise.all([document.fonts.load('600 60px "Barlow Condensed"'),document.fonts.load('31px "IBM Plex Mono"'),document.fonts.load('28px "IBM Plex Sans"'),document.fonts.load('700 60px "Gaegu"'),document.fonts.load('36px "Patrick Hand"')]).catch(()=>{}),new Promise(r=>setTimeout(r,1800))]);
+ready.then(()=>{build();buildTunnels();buildKid();built=true;loadScenario(0);applyMode(startKid);renderer.setAnimationLoop(tick);});
 })();
 </script>
-
 </body>
 </html>
