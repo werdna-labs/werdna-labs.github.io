@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>*,*::before,*::after{box-sizing:border-box}body{margin:0}[hidden]{display:none!important}</style>
+<title>VXLAN Packet Ride</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: full-bleed WebGL fabric; brand + grouped scenario tabs top-left, header-stack inspector right, hop timeline + transport bottom.
+   Palette: HPE dark neutrals + HPE core palette, Aruba orange/blue, Juniper green. Single committed dark look. */
+:root{
+  color-scheme: dark;
+  --bg:#1c1c1c; --panel:rgba(34,34,34,.93); --raise:#2b2b2b; --line:#3d3d3d;
+  --ink:#f4f4f4; --mute:#a6a6a6; --faint:#727272;
+  --brand:#01a982;           /* HPE green */
+  --under:#ff8300;           /* Aruba orange */
+  --over:#00e8cf;            /* HPE teal */
+  --l3:#fec901;              /* HPE yellow */
+  --ctrl:#7630ea; --ctrl-ink:#a983f4;   /* HPE purple + legible tint */
+  --esi:#2e7cbe;  --esi-ink:#6ea9dd;    /* Aruba meridian blue + tint */
+  --gbp:#84b135;             /* Juniper green */
+  --drop:#c54e4b; --drop-ink:#e2807d;   /* HPE red + tint */
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--ink);overflow:hidden}
+body{font-family:var(--f-body);font-size:14px;line-height:1.5}
+#app{position:relative;height:100%}
+#view{position:absolute;inset:0}
+#view canvas{display:block;touch-action:none}
+button,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+#top{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(16px + env(safe-area-inset-left,0px));right:calc(420px + env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:10px;pointer-events:none}
+#top>*{pointer-events:auto}
+.brand{display:flex;gap:12px;align-items:flex-start}
+.brand .mark{width:46px;height:11px;margin-top:7px;flex:none;background:var(--brand);border-radius:1px}
+.brand h1{font-family:var(--f-display);font-weight:700;font-size:30px;letter-spacing:.02em;line-height:1;margin:0;text-wrap:balance}
+.brand p{margin:4px 0 0;color:var(--mute);font-size:13px;max-width:62ch}
+#scen{display:flex;flex-direction:column;gap:6px}
+.grp{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.grp>span{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);width:112px;flex:none}
+.grp button{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 11px;cursor:pointer;font-size:12.5px;color:var(--mute);display:inline-flex;gap:6px;align-items:center}
+.grp button i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.grp button[aria-selected="true"]{color:#111;background:var(--ink);border-color:var(--ink);font-weight:600}
+#scenSel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;max-width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:18px;height:3px;border-radius:2px;display:inline-block}
+
+#panel{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));bottom:calc(132px + env(safe-area-inset-bottom,0px));width:396px;background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--accent,var(--brand));border-radius:6px;padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+#panel h2{font-family:var(--f-display);font-weight:600;font-size:26px;line-height:1.08;margin:0;text-wrap:balance}
+#panel p{margin:0;color:#d6d6d6;max-width:62ch}
+.drop{background:color-mix(in srgb,var(--drop) 22%,transparent);border:1px solid var(--drop);color:var(--drop-ink);border-radius:6px;padding:7px 10px;font-weight:600;font-size:13px}
+.sees{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12.5px;padding:10px 12px;border-radius:6px;background:var(--raise);margin:0}
+.sees dt{font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;padding-top:2px}
+.sees dd{margin:0;color:#d6d6d6;min-width:0}
+.sees .u{color:var(--under)} .sees .o{color:var(--over)}
+.lookup{font-family:var(--f-mono);font-size:11.5px;border:1px dashed var(--line);border-radius:6px;padding:8px 10px;display:grid;gap:4px}
+.lookup .lk{color:var(--mute);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em}
+.lookup div{display:grid;grid-template-columns:minmax(0,auto) 1fr;gap:2px 10px}
+.lookup b{font-weight:500;color:var(--ink);overflow-wrap:anywhere}
+.lookup span{color:#d6d6d6;overflow-wrap:anywhere}
+.stackhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-family:var(--f-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--mute)}
+.stackhead .tot{color:var(--ink);font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-direction:column;gap:4px}
+.hdr{--c:var(--over);border-left:4px solid var(--c);background:var(--raise);border-radius:0 5px 5px 0;padding:6px 10px 7px}
+.hdr .hn{display:flex;align-items:baseline;gap:8px;font-weight:600;font-size:13px}
+.hdr .hn small{font-family:var(--f-mono);font-weight:400;color:var(--mute);font-size:11px;font-variant-numeric:tabular-nums}
+.hdr .hn em{margin-left:auto;font-style:normal;font-family:var(--f-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:3px;background:var(--c);color:#111;font-weight:500;white-space:nowrap}
+.hdr dl{margin:3px 0 0;display:grid;grid-template-columns:auto 1fr;gap:0 10px;font-family:var(--f-mono);font-size:11.5px}
+.hdr dt{color:var(--mute)} .hdr dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.hdr.gone{opacity:.38} .hdr.gone dl{text-decoration:line-through}
+.hdr.c-under{--c:var(--under)} .hdr.c-l3{--c:var(--l3)} .hdr.c-ctrl{--c:var(--ctrl-ink)} .hdr.c-esi{--c:var(--esi-ink)} .hdr.c-gbp{--c:var(--gbp)} .hdr.c-drop{--c:var(--drop-ink)}
+.hdr.c-vx{border-left:0;padding-left:14px;background:linear-gradient(90deg,var(--under) 0 2px,var(--over) 2px 4px,var(--raise) 4px)}
+.hdr.c-vx em{background:var(--over)}
+.note{font-size:12.5px;color:var(--mute);border-top:1px solid var(--line);padding-top:10px}
+.cmpwrap{overflow-x:auto}
+.cmp{border-collapse:collapse;font-size:11.5px;width:100%;min-width:340px}
+.cmp th,.cmp td{text-align:left;vertical-align:top;padding:5px 6px;border-bottom:1px solid var(--line)}
+.cmp thead th{font-family:var(--f-mono);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.cmp thead th:last-child{color:var(--gbp)}
+.cmp tbody th{color:var(--mute);font-weight:500}
+.cmp td:last-child{color:var(--ink)}
+.cmp td{color:#c8c8c8}
+
+#ctl{position:absolute;left:0;right:calc(420px + env(safe-area-inset-right,0px));bottom:0;padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px));padding-left:calc(16px + env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:10px;background:linear-gradient(transparent,rgba(28,28,28,.94) 35%)}
+#timeline{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px}
+#timeline button{flex:1 0 auto;min-width:70px;background:transparent;border:0;border-top:3px solid var(--line);padding:6px 4px 0;text-align:left;cursor:pointer;color:var(--faint)}
+#timeline button .n{font-family:var(--f-mono);font-size:10.5px}
+#timeline button .t{display:block;font-size:12px;white-space:nowrap}
+#timeline button.done{border-top-color:var(--mute);color:var(--mute)}
+#timeline button.cur{border-top-color:var(--accent,var(--brand));color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{background:var(--raise);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--mute)}
+.btn.primary{background:var(--brand);color:#0b0b0b;border-color:var(--brand);font-weight:600}
+.btn[aria-pressed="true"]{border-color:var(--brand);color:var(--brand)}
+.btn:disabled{opacity:.45;cursor:default}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--raise);border:0;padding:7px 11px;cursor:pointer;font-size:13px;color:var(--mute)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#111;font-weight:600}
+.spacer{flex:1}
+select{background:var(--raise);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+#vr{border-color:var(--brand)}
+#toast{position:absolute;left:50%;top:calc(16px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--ink);color:#111;padding:9px 14px;border-radius:6px;font-size:13px;max-width:min(520px,calc(100% - 32px));z-index:5}
+.kbd{font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+
+@media (max-width:1100px){.legend{display:none}}
+@media (max-width:860px){
+  #top{right:calc(16px + env(safe-area-inset-right,0px))}
+  .brand p,.kbd,#scen{display:none}
+  #scenSel{display:block}
+  .brand h1{font-size:24px}
+  #panel{top:auto;left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));width:auto;bottom:calc(122px + env(safe-area-inset-bottom,0px));max-height:40%;padding:14px}
+  #panel h2{font-size:21px}
+  #ctl{right:0}
+  #timeline button{min-width:58px}
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div id="view" aria-label="3D EVPN-VXLAN fabric"></div>
+  <header id="top">
+    <div class="brand"><span class="mark" aria-hidden="true"></span><div>
+      <h1>VXLAN Packet Ride</h1>
+      <p>Two spines, four leaves, one tenant, one ESI-LAG. Ride a packet through the underlay while its overlay twin crosses the tunnel.</p>
+    </div></div>
+    <nav id="scen" aria-label="Scenario"></nav>
+    <select id="scenSel" aria-label="Scenario"></select>
+    <div class="legend">
+      <span><i style="background:var(--under)"></i>Underlay</span>
+      <span><i style="background:var(--over)"></i>L2 VNI</span>
+      <span><i style="background:var(--l3)"></i>L3VNI</span>
+      <span><i style="background:var(--ctrl)"></i>EVPN routes</span>
+      <span><i style="background:var(--esi)"></i>ESI multihoming</span>
+      <span><i style="background:var(--gbp)"></i>GBP tag</span>
+      <span><i style="background:var(--drop)"></i>Policy drop</span>
+    </div>
+  </header>
+  <aside id="panel" aria-live="polite"></aside>
+  <footer id="ctl">
+    <div id="timeline" aria-label="Hops"></div>
+    <div class="row">
+      <button class="btn" id="prev" title="Back one stop (←)">◀ Back</button>
+      <button class="btn primary" id="next" title="Next hop (Space)">Next hop ▶</button>
+      <button class="btn" id="auto" aria-pressed="false">Auto</button>
+      <button class="btn" id="restart">Restart</button>
+      <div class="seg" role="group" aria-label="Camera">
+        <button id="vRide" aria-pressed="false">Ride</button>
+        <button id="vOver" aria-pressed="true">Overview</button>
+      </div>
+      <button class="btn" id="tU" aria-pressed="true">Underlay</button>
+      <button class="btn" id="tO" aria-pressed="true">Overlay</button>
+      <label class="row" style="gap:6px"><span class="kbd" style="display:inline">Speed</span>
+        <select id="speed"><option value="0.6">0.6×</option><option value="1" selected>1×</option><option value="1.8">1.8×</option></select></label>
+      <span class="spacer"></span>
+      <button class="btn" id="vr">Enter VR</button>
+    </div>
+  </footer>
+  <div id="toast" hidden></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const REDUCE=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* HPE core palette, Aruba brand, Juniper green */
+const COL={under:0xff8300,over:0x00e8cf,l3:0xfec901,ctrl:0x7630ea,esi:0x2e7cbe,gbp:0x84b135,drop:0xc54e4b,brand:0x01a982};
+const CSS={under:'#ff8300',over:'#00e8cf',l3:'#fec901',ctrl:'#a983f4',esi:'#6ea9dd',gbp:'#84b135',drop:'#e2807d',brand:'#01a982'};
+
+/* ---------------- topology ---------------- */
+const N={
+  HA:{p:[-9,0,4.5],t:'host',n:'Host A',s:'10.1.10.11 · VLAN 10'},
+  HD:{p:[0,0,6.6],t:'host',n:'Host D',s:'10.1.10.44 · ESI-LAG'},
+  HC:{p:[4.6,0,4.5],t:'host',n:'Host C',s:'10.1.20.33 · VLAN 20'},
+  HB:{p:[9,0,4.5],t:'host',n:'Host B',s:'10.1.10.22 · VLAN 10'},
+  L1:{p:[-9,4,0],t:'leaf',n:'Leaf1',s:'VTEP 10.0.0.1'},
+  L2:{p:[-3,4,0],t:'leaf',n:'Leaf2',s:'VTEP 10.0.0.2'},
+  L3:{p:[3,4,0],t:'leaf',n:'Leaf3',s:'VTEP 10.0.0.3'},
+  L4:{p:[9,4,0],t:'leaf',n:'Leaf4',s:'VTEP 10.0.0.4'},
+  S1:{p:[-5,10,-3],t:'spine',n:'Spine1',s:'lo0 10.0.0.11 · EVPN RR'},
+  S2:{p:[5,10,-3],t:'spine',n:'Spine2',s:'lo0 10.0.0.12 · EVPN RR'},
+  V1:{p:[-9,17,0],t:'vtep',n:'VTEP 1',s:'10.0.0.1'},
+  V2:{p:[-3,17,0],t:'vtep',n:'VTEP 2',s:'10.0.0.2'},
+  V3:{p:[3,17,0],t:'vtep',n:'VTEP 3',s:'10.0.0.3'},
+  V4:{p:[9,17,0],t:'vtep',n:'VTEP 4',s:'10.0.0.4'}
+};
+const V3=a=>new THREE.Vector3(a[0],a[1],a[2]);
+function attach(id){const n=N[id];const v=V3(n.p);if(n.t==='host')v.y+=2.1;return v;}
+
+/* ---------------- header builders ---------------- */
+const M={A:'52:54:00:0a:00:11',B:'52:54:00:0a:00:22',C:'52:54:00:14:00:33',D:'52:54:00:0a:00:44',GW:'00:00:5e:00:01:01',
+  L1:'2c:6b:f5:01:00:01',L3:'2c:6b:f5:03:00:01',S1:'2c:6b:f5:a1:00:01',S2:'2c:6b:f5:a2:00:01',BC:'ff:ff:ff:ff:ff:ff'};
+const ESI='00:11:22:33:44:55:66:77:88:99';
+const eth=(s,d,st,nm,type,c)=>({k:'ieth',nm:nm||'Ethernet',b:14,st,c,f:[['src',s],['dst',d],['type',type||'0x0800 IPv4']]});
+const ip=(s,d,ttl,st,nm,c)=>({k:'iip',nm:nm||'IPv4',b:20,st,c,f:[['src',s],['dst',d],['ttl',ttl]]});
+const icmp=()=>({k:'pay',nm:'ICMP echo request',b:64,f:[['type','8 · seq 1'],['data','56 B']]});
+const arp=(nm,a,b)=>({k:'pay',nm,b:28,f:[a,b]});
+const oeth=(s,d,st)=>({k:'oeth',nm:'Outer Ethernet',b:14,st,c:'under',f:[['src',s],['dst',d]]});
+const oip=(s,d,ttl,st)=>({k:'oip',nm:'Outer IPv4',b:20,st,c:'under',f:[['src',s],['dst',d],['proto','17 UDP'],['ttl',ttl]]});
+const udp=(sp,st)=>({k:'udp',nm:'Outer UDP',b:8,st,c:'under',f:[['src port',sp+' · inner-flow hash'],['dst port','4789 VXLAN']]});
+const vx=(vni,st,c)=>({k:'vx',nm:'VXLAN',b:8,st,c:c||'vx',f:[['flags','I bit set'],['VNI',vni]]});
+const vxg=(vni,gpid,st)=>({k:'vx',nm:'VXLAN-GBP',b:8,st,c:'gbp',f:[['flags','G=1 · I=1 · A=0 (policy not yet applied)'],['group policy ID',gpid],['VNI',vni]]});
+const tip=(s,d,st)=>({k:'oip',nm:'IPv4 (underlay)',b:20,st,c:'under',f:[['src',s],['dst',d],['proto','6 TCP']]});
+const tcp=()=>({k:'udp',nm:'TCP',b:20,c:'under',f:[['dst port','179 BGP']]});
+const bgp=(nm,f,st,c)=>({k:'bgp',nm,b:0,st,c:c||'ctrl',f});
+const gone=h=>Object.assign({},h,{st:'gone'});
+const same=h=>Object.assign({},h,{st:''});
+const pay=h=>h;
+
+/* ---------------- scenarios ---------------- */
+const SC=[];
+
+/* Bridged */
+(function(){
+  const e0=eth(M.A,M.B,'new'),i0=ip('10.1.10.11','10.1.10.22',64,'new'),p=icmp();
+  const ie=eth(M.A,M.B,'','Inner Ethernet'),ii=ip('10.1.10.11','10.1.10.22',64,'','Inner IPv4');
+  const o1=oeth(M.L1,M.S1,'new'),oi1=oip('10.0.0.1','10.0.0.4',64,'new'),u=udp(52214,'new'),v=vx('10010 (VLAN 10)','new');
+  SC.push({id:'l2',grp:0,tab:'Bridged · same VNI',color:'over',tunnels:[{a:'V1',b:'V4',from:2,to:4}],stops:[
+    {at:'HA',t:'Host A pings Host B',
+     d:'Both hosts sit in 10.1.10.0/24 and VLAN 10, on different leaves. Leaf1 already answered Host A’s ARP from its EVPN ARP-suppression table, so Host A frames straight to Host B’s MAC.',
+     u:'Nothing yet. The frame is still on Host A’s access link.',o:'An ordinary Layer 2 frame in VLAN 10.',h:[e0,i0,p]},
+    {at:'L1',t:'Leaf1 maps VLAN 10 to VNI 10010',
+     d:'The access port places the frame in the MAC-VRF for VNI 10010. Host B’s MAC is in the table, learned through an EVPN Type-2 route whose next hop is Leaf4’s VTEP.',
+     lk:[[M.B,'remote VTEP 10.0.0.4 · VNI 10010 · EVPN Type-2']],
+     u:'Still nothing. Lookup happens inside the leaf.',o:'Destination is behind VTEP 10.0.0.4.',h:[same(e0),same(i0),p]},
+    {at:'L1',t:'Leaf1 encapsulates the frame',shell:1,
+     d:'The whole original frame becomes payload. Leaf1 adds a VXLAN header with VNI 10010, UDP to port 4789, an outer IP from its loopback to Leaf4’s, and an outer Ethernet header for the first underlay hop. The UDP source port is a hash of the inner flow, which gives the underlay entropy for ECMP.',
+     u:'A UDP packet from 10.0.0.1 to 10.0.0.4.',o:'The frame enters the tunnel Leaf1 → Leaf4 (the arc above).',
+     h:[o1,oi1,u,v,ie,ii,p],note:'VXLAN adds 50 bytes (14 + 20 + 8 + 8). Fabric links need an MTU of at least the host MTU plus 50, which is why underlay links usually run jumbo frames such as 9216.'},
+    {at:'S1',t:'Spine1 routes on the outer header only',shell:1,
+     d:'Spine1 carries no VNIs and no tenant MAC tables. It routes 10.0.0.4/32 from the underlay table, rewrites the outer Ethernet header and decrements the outer TTL. ECMP put this flow on Spine1; a flow with a different source port could land on Spine2.',
+     u:'One routed hop: 10.0.0.1 → 10.0.0.4.',o:'Nothing. The overlay sees Leaf1 and Leaf4 as directly adjacent.',
+     h:[oeth(M.S1,'2c:6b:f5:04:00:30','changed'),oip('10.0.0.1','10.0.0.4',63,'changed'),same(u),same(v),ie,ii,p]},
+    {at:'L4',t:'Leaf4 decapsulates',
+     d:'The outer destination is Leaf4’s own VTEP and the UDP port is 4789, so Leaf4 strips the 50 bytes, maps VNI 10010 back to VLAN 10, and finds Host B’s MAC on a local port.',
+     u:'The packet ends here, at VTEP 10.0.0.4.',o:'The frame leaves the tunnel unchanged.',
+     h:[gone(o1),gone(oip('10.0.0.1','10.0.0.4',63)),gone(u),gone(v),same(e0),same(i0),p]},
+    {at:'HB',t:'Delivered to Host B',
+     d:'Host B receives the frame Host A sent: same MACs, inner TTL still 64. The underlay never saw a tenant MAC, and the overlay never saw a spine.',
+     u:'Done.',o:'A single Layer 2 hop from Host A.',h:[same(e0),same(i0),p]}
+  ]});
+})();
+
+/* Symmetric IRB */
+(function(){
+  const p=icmp();
+  const e0=eth(M.A,M.GW,'new'),i0=ip('10.1.10.11','10.1.20.33',64,'new');
+  const ie=eth(M.L1,M.L3,'changed','Inner Ethernet',null,'l3'),ii=ip('10.1.10.11','10.1.20.33',63,'changed','Inner IPv4','l3');
+  const o1=oeth(M.L1,M.S2,'new'),oi=oip('10.0.0.1','10.0.0.3',64,'new'),u=udp(61107,'new'),v=vx('50001 (L3VNI · VRF TENANT-A)','new','l3');
+  const e5=eth(M.GW,M.C,'changed',null,null,'l3'),i5=ip('10.1.10.11','10.1.20.33',62,'changed',null,'l3');
+  SC.push({id:'sym',grp:0,tab:'Routed · symmetric IRB',color:'l3',tunnels:[{a:'V1',b:'V3',from:2,to:4}],stops:[
+    {at:'HA',t:'Host A pings Host C in another subnet',
+     d:'Host C is in 10.1.20.0/24, VLAN 20. Host A sends to its default gateway. Every leaf owns the same gateway IP and virtual MAC (an anycast gateway), so the first routing hop is always the local leaf.',
+     u:'Nothing yet.',o:'A frame addressed to the gateway MAC.',h:[e0,i0,p]},
+    {at:'L1',t:'Leaf1 routes in VRF TENANT-A',
+     d:'The destination MAC is the anycast gateway, so Leaf1 routes. In VRF TENANT-A, 10.1.20.33/32 came from an EVPN Type-2 MAC+IP route with next hop 10.0.0.3. Leaf1 does not need VLAN 20 or VNI 10020 configured.',
+     lk:[['10.1.20.33/32','VTEP 10.0.0.3 · L3VNI 50001'],['router MAC',M.L3+' (EVPN extended community)']],
+     u:'Nothing. This is a lookup inside the leaf.',o:'A route in the tenant VRF.',h:[same(e0),same(i0),p]},
+    {at:'L1',t:'Leaf1 rewrites and encapsulates with the L3VNI',shell:1,
+     d:'Because the packet is routed, the inner Ethernet header is rewritten: source is Leaf1’s router MAC, destination is Leaf3’s. Inner TTL drops to 63. The VNI is 50001, the L3VNI that identifies the VRF, not VLAN 20’s VNI.',
+     u:'A UDP packet from 10.0.0.1 to 10.0.0.3.',o:'The packet enters the routed tunnel Leaf1 → Leaf3.',
+     h:[o1,oi,u,v,ie,ii,p],note:'Symmetric IRB: each leaf needs only the VNIs of its own VLANs plus one L3VNI per VRF. Compare the asymmetric scenario.'},
+    {at:'S2',t:'Spine2 forwards on the outer IP',shell:1,
+     d:'This flow’s UDP source port hashed onto Spine2. It forwards on the outer header exactly as Spine1 would. Spines hold no VRFs and no tenant routes.',
+     u:'One routed hop: 10.0.0.1 → 10.0.0.3.',o:'Nothing. Leaf1 and Leaf3 look adjacent.',
+     h:[oeth(M.S2,'2c:6b:f5:03:00:30','changed'),oip('10.0.0.1','10.0.0.3',63,'changed'),same(u),same(v),same(ie),same(ii),p]},
+    {at:'L3',t:'Leaf3 decapsulates and routes again',
+     d:'VNI 50001 maps to VRF TENANT-A. Leaf3 looks up 10.1.20.33, finds Host C behind its VLAN 20 IRB interface, rewrites the source to the anycast gateway MAC and the destination to Host C, and decrements the inner TTL to 62.',
+     u:'The packet ends at VTEP 10.0.0.3.',o:'Second routing hop, inside VRF TENANT-A.',
+     h:[gone(o1),gone(oi),gone(u),gone(v),e5,i5,p]},
+    {at:'HC',t:'Delivered to Host C with TTL 62',
+     d:'Host C sees two routing hops, Leaf1 and Leaf3. The spines decremented only the outer TTL, so they stay invisible to the tenant.',
+     u:'Done.',o:'Two routed hops from Host A.',h:[same(e5),same(i5),p]}
+  ]});
+})();
+
+/* Asymmetric IRB */
+(function(){
+  const p=icmp();
+  const e0=eth(M.A,M.GW,'new'),i0=ip('10.1.10.11','10.1.20.33',64,'new');
+  const ie=eth(M.GW,M.C,'changed','Inner Ethernet',null,'l3'),ii=ip('10.1.10.11','10.1.20.33',63,'changed','Inner IPv4','l3');
+  const o1=oeth(M.L1,M.S1,'new'),oi=oip('10.0.0.1','10.0.0.3',64,'new'),u=udp(58841,'new'),v=vx('10020 (VLAN 20 · destination L2 VNI)','new');
+  SC.push({id:'asym',grp:0,tab:'Routed · asymmetric IRB',color:'over',tunnels:[{a:'V1',b:'V3',from:2,to:4}],stops:[
+    {at:'HA',t:'Host A pings Host C, asymmetric this time',
+     d:'Same hosts and subnets as the symmetric scenario. The difference is that every leaf is configured with every VLAN, VNI and IRB interface, including VLAN 20 on Leaf1, which has no VLAN 20 hosts.',
+     u:'Nothing yet.',o:'A frame addressed to the gateway MAC.',h:[e0,i0,p]},
+    {at:'L1',t:'Leaf1 routes directly into VLAN 20',
+     d:'Leaf1 routes from its VLAN 10 IRB to its local VLAN 20 IRB. Because VLAN 20 exists on Leaf1, it can resolve Host C’s MAC from the EVPN Type-2 MAC+IP route and bridge the rest of the way.',
+     lk:[['10.1.20.33','ARP/ND entry → '+M.C],[M.C,'remote VTEP 10.0.0.3 · VNI 10020']],
+     u:'Nothing. The routing and bridging both happen inside Leaf1.',o:'Routed once, then bridged in VLAN 20.',h:[same(e0),same(i0),p]},
+    {at:'L1',t:'Encapsulate in the destination VNI',shell:1,
+     d:'The inner header is already final: source is the gateway MAC, destination is Host C, TTL 63. Leaf1 encapsulates with VNI 10020, the Layer 2 VNI of the destination VLAN. No L3VNI is involved.',
+     u:'A UDP packet from 10.0.0.1 to 10.0.0.3.',o:'The packet enters the VNI 10020 tunnel Leaf1 → Leaf3.',
+     h:[o1,oi,u,v,ie,ii,p],note:'Routing happens only on the ingress leaf. The egress leaf bridges. That is what makes it asymmetric.'},
+    {at:'S1',t:'Spine1 forwards on the outer IP',shell:1,
+     d:'Nothing changes for the spine. It routes on the outer header whether the inner packet was bridged or routed.',
+     u:'One routed hop: 10.0.0.1 → 10.0.0.3.',o:'Nothing.',
+     h:[oeth(M.S1,'2c:6b:f5:03:00:30','changed'),oip('10.0.0.1','10.0.0.3',63,'changed'),same(u),same(v),same(ie),same(ii),p]},
+    {at:'L3',t:'Leaf3 decapsulates and only bridges',
+     d:'VNI 10020 maps to VLAN 20. Leaf3 does a MAC lookup and sends the frame to Host C. No routing and no TTL change.',
+     u:'The packet ends at VTEP 10.0.0.3.',o:'A Layer 2 delivery in VLAN 20.',
+     h:[gone(o1),gone(oi),gone(u),gone(v),eth(M.GW,M.C,'',null,null,'l3'),ip('10.1.10.11','10.1.20.33',63,'',null,'l3'),p]},
+    {at:'HC',t:'Delivered to Host C with TTL 63',
+     d:'One routing hop instead of two. The return traffic is routed by Leaf3 into VLAN 10 and bridged by Leaf1, so each direction routes at its own ingress leaf.',
+     u:'Done.',o:'One routed hop.',h:[eth(M.GW,M.C,'',null,null,'l3'),ip('10.1.10.11','10.1.20.33',63,'',null,'l3'),p],
+     cmp:{head:['','Asymmetric','Symmetric'],rows:[
+       ['Routing hops','Ingress leaf only','Ingress and egress leaf'],
+       ['VNI on the wire','Destination L2 VNI (10020)','L3VNI per VRF (50001)'],
+       ['Inner TTL at Host C','63','62'],
+       ['Config on each leaf','Every VLAN, VNI and IRB in the VRF','Local VLANs plus one L3VNI'],
+       ['ARP/MAC state','Every host on every leaf','Local hosts plus host routes'],
+       ['Typical fit','Small fabrics, few VLANs','Most production fabrics']]}}
+  ]});
+})();
+
+/* BUM ingress replication */
+(function(){
+  const e0=eth(M.A,M.BC,'new',null,'0x0806 ARP'),a0=arp('ARP request',['who-has','10.1.10.99'],['tell','10.1.10.11']);
+  const ie=eth(M.A,M.BC,'','Inner Ethernet','0x0806 ARP');
+  const o1=oeth(M.L1,M.S1,'new'),oi=oip('10.0.0.1','10.0.0.4',64,'new'),u=udp(49380,'new'),v=vx('10010 (VLAN 10)','new');
+  SC.push({id:'bum',grp:0,tab:'BUM · ingress replication',color:'over',
+    tunnels:[{a:'V1',b:'V4',from:2,to:4},{a:'V1',b:'V2',from:2,to:4},{a:'V1',b:'V3',from:2,to:4}],stops:[
+    {at:'HA',t:'Host A ARPs for an unknown address',
+     d:'Host A broadcasts an ARP request for 10.1.10.99. No leaf has a Type-2 MAC+IP route for that address, so ARP suppression cannot answer locally. The broadcast has to reach every leaf that carries VNI 10010.',
+     u:'Nothing yet.',o:'A broadcast in VLAN 10.',h:[e0,a0]},
+    {at:'L1',t:'Leaf1 builds a flood list from Type-3 routes',
+     d:'Every leaf advertises an EVPN Type-3 Inclusive Multicast route for each VNI it carries. For VNI 10010, Leaf1 has Type-3 routes from Leaf2, Leaf3 and Leaf4, so those three VTEPs form its ingress-replication list.',
+     lk:[['VNI 10010 flood list','10.0.0.2 · 10.0.0.3 · 10.0.0.4']],
+     u:'Nothing yet.',o:'Three remote VTEPs need a copy.',h:[same(e0),same(a0)]},
+    {at:'L1',t:'Ingress replication: three unicast copies',shell:1,
+     d:'Leaf1 makes one VXLAN copy per remote VTEP, each with its own outer destination. The underlay needs no multicast. You are riding the copy to Leaf4; the copies for Leaf2 and Leaf3 differ only in outer destination IP.',
+     u:'Three unicast UDP packets.',o:'Three tunnels light up at once.',h:[o1,oi,u,v,ie,a0]},
+    {at:'S1',t:'Copies take independent paths',shell:1,
+     d:'Each copy is its own unicast packet, so ECMP can hash them onto different spines. Here the copies for Leaf2 and Leaf3 cross Spine2 while yours crosses Spine1.',
+     u:'Routed on the outer header.',o:'Nothing changes.',h:[oeth(M.S1,'2c:6b:f5:04:00:30','changed'),oip('10.0.0.1','10.0.0.4',63,'changed'),same(u),same(v),ie,a0],
+     clones:[['L1','S2',0],['L1','S2',1]]},
+    {at:'L4',t:'Leaf4 decapsulates and floods locally',
+     d:'Leaf4 strips the outer headers and floods the ARP out its VLAN 10 access ports. It does not send the frame back into the fabric, because it arrived from another VTEP.',
+     u:'The copy ends at VTEP 10.0.0.4.',o:'Local flood only.',h:[gone(o1),gone(oi),gone(u),gone(v),same(e0),a0],
+     clones:[['S2','L2',0],['S2','L3',1]]},
+    {at:'HB',t:'Every VLAN 10 port has the broadcast',
+     d:'Host B ignores it because 10.1.10.99 is not its address. In practice, ARP suppression removes most of this traffic once leaves learn MAC+IP bindings through Type-2 routes. The ESI scenarios show what happens when the receiver is dual-homed.',
+     u:'Done.',o:'Flooded to the whole VLAN.',h:[same(e0),a0]}
+  ]});
+})();
+
+/* Control plane Type-2 */
+(function(){
+  const g0=eth(M.B,M.BC,'new',null,'0x0806 ARP'),a0=arp('Gratuitous ARP',['sender','10.1.10.22'],['MAC',M.B]);
+  const base=[['route','Type-2 MAC/IP advertisement'],['RD','10.0.0.4:10010'],['ESI','0 (single-homed)'],['MAC',M.B],['IP','10.1.10.22'],['label','VNI 10010'],['next hop','10.0.0.4'],['RT','target:65000:10010'],['encap','VXLAN']];
+  const bgp1=bgp('BGP UPDATE · EVPN',base,'new');
+  const bgp2=bgp('BGP UPDATE · EVPN',base.concat([['originator','10.0.0.4'],['cluster list','10.0.0.11']]),'changed');
+  SC.push({id:'cp',grp:1,tab:'Type-2 advertisement',color:'ctrl',noBytes:1,tunnels:[],stops:[
+    {at:'HB',t:'Host B comes online',
+     d:'This scenario shows how Leaf1 knew where Host B was before the first bridged packet. Host B boots and sends a gratuitous ARP.',
+     u:'Nothing yet.',o:'Nothing yet.',h:[g0,a0]},
+    {at:'L4',t:'Leaf4 learns Host B and originates a Type-2 route',
+     d:'Leaf4 learns Host B’s MAC on its VLAN 10 port and snoops the IP from the ARP. It originates an EVPN Type-2 route carrying the VNI and its own VTEP address as next hop, and sends it to both spines.',
+     u:'A BGP session over TCP between loopbacks.',o:'A new MAC+IP binding to announce.',h:[tip('10.0.0.4','10.0.0.11','new'),tcp(),bgp1]},
+    {at:'S1',t:'Spine1 reflects the route',
+     d:'The spines are route reflectors for the EVPN address family (iBGP, AS 65000). Spine1 does not program the route into any forwarding table. It reflects it to every other leaf over separate TCP sessions and leaves the next hop at 10.0.0.4. Spine2 does the same with its copy.',
+     u:'A new TCP session, Spine1 → Leaf1.',o:'Only reflection attributes are added.',h:[tip('10.0.0.11','10.0.0.1','changed'),tcp(),bgp2],
+     clones:[['L4','S2',0]]},
+    {at:'L1',t:'Leaf1 imports the route',
+     d:'Route target 65000:10010 matches the MAC-VRF for VNI 10010 on Leaf1, so Leaf1 imports it. Leaf2 and Leaf3 receive the same update and make the same decision.',
+     u:'Delivered over TCP.',o:'Import by route target.',h:[same(tip('10.0.0.11','10.0.0.1')),tcp(),same(bgp2)],
+     clones:[['S1','L2',0],['S1','L3',1]]},
+    {at:'L1',t:'Leaf1 programs the forwarding entry',hl:[['V1','V4']],
+     d:'Leaf1 installs Host B’s MAC against VTEP 10.0.0.4 and VNI 10010, and adds 10.1.10.22 to its ARP-suppression table. This is the entry the bridged ride looks up.',
+     lk:[[M.B,'VTEP 10.0.0.4 · VNI 10010'],['10.1.10.22','ARP suppression → '+M.B]],
+     u:'An underlay route to 10.0.0.4 resolves the tunnel.',o:'Tunnel Leaf1 ↔ Leaf4 in use.',h:[same(bgp2)]}
+  ]});
+})();
+
+/* ESI Type-4 DF election + BUM to multihomed host */
+(function(){
+  const lacp=bgp('LACP (both links)',[['system ID','00:00:00:00:01:01 (same on Leaf2 and Leaf3)'],['ae','ae0 · ESI '+ESI],['mode','all-active']],'new','esi');
+  const t4f=[['route','Type-4 Ethernet Segment'],['RD','10.0.0.2:0'],['ESI',ESI],['originator IP','10.0.0.2'],['ES-import RT','11:22:33:44:55:66 (from ESI)']];
+  const t4a=bgp('BGP UPDATE · EVPN',t4f,'new','esi');
+  const t4b=bgp('BGP UPDATE · EVPN',t4f.concat([['cluster list','10.0.0.11']]),'changed','esi');
+  const e0=eth(M.A,M.BC,'new',null,'0x0806 ARP'),a0=arp('ARP request',['who-has','10.1.10.44'],['tell','10.1.10.11']);
+  const ie=eth(M.A,M.BC,'','Inner Ethernet','0x0806 ARP');
+  const o1=oeth(M.L1,M.S1,'new'),oi=oip('10.0.0.1','10.0.0.2',64,'new'),u=udp(50117,'new'),v=vx('10010 (VLAN 10)','new');
+  SC.push({id:'df',grp:1,tab:'ESI · Type-4 DF election',color:'esi',tunnels:[{a:'V1',b:'V2',from:6,to:8},{a:'V1',b:'V3',from:6,to:8},{a:'V1',b:'V4',from:6,to:8}],stops:[
+    {at:'HD',t:'Host D is dual-homed on an ESI-LAG',
+     d:'Host D runs one LACP bundle split across Leaf2 and Leaf3. Both leaves present the same LACP system ID and are configured with the same Ethernet Segment Identifier, so Host D sees a single switch.',
+     u:'Two physical links, one to each leaf.',o:'One Ethernet segment, ESI '+ESI+'.',h:[lacp]},
+    {at:'L2',t:'Leaf2 originates a Type-4 Ethernet Segment route',
+     d:'Each leaf attached to the segment advertises a Type-4 route. It carries the ESI, the leaf’s own address, and an ES-import route target derived from the ESI, so only leaves on the same segment import it. Leaf3 sends the same route with its own address.',
+     u:'BGP over TCP, Leaf2 → Spine1.',o:'Discovery of who shares this segment.',h:[tip('10.0.0.2','10.0.0.11','new'),tcp(),t4a]},
+    {at:'S1',t:'The spine reflects the Type-4 route',
+     d:'The route reflector passes the route to every leaf. Leaf1 and Leaf4 have no interface with the ES-import route target 11:22:33:44:55:66, so they do not import it.',
+     u:'BGP over TCP, Spine1 → Leaf3.',o:'Only segment members keep the route.',h:[tip('10.0.0.11','10.0.0.3','changed'),tcp(),t4b],
+     clones:[['L2','S2',0]]},
+    {at:'L3',t:'Leaf3 imports Leaf2’s Type-4 route',
+     d:'Leaf3 now knows Leaf2 shares the segment, and Leaf2 learns the same about Leaf3 from Leaf3’s route. Both leaves wait a short timer for other members, then run the same election.',
+     u:'Delivered.',o:'Segment members: 10.0.0.2 and 10.0.0.3.',h:[same(tip('10.0.0.11','10.0.0.3')),tcp(),same(t4b)],
+     clones:[['S1','L1',0],['S1','L4',1]]},
+    {at:'L3',t:'Both leaves elect a designated forwarder',
+     d:'With the default modulo method, the members are sorted by IP address and the DF for a VLAN is the member at index (VLAN mod N). VLAN 10 mod 2 is 0, so Leaf2 is the DF for VLAN 10. VLAN 11 would elect Leaf3, spreading the load across VLANs.',
+     lk:[['ordered members','[0] 10.0.0.2 · [1] 10.0.0.3'],['VLAN 10','10 mod 2 = 0 → Leaf2 is DF'],['Leaf3 on VLAN 10','non-DF: blocks BUM toward ESI']],
+     u:'No traffic. Each leaf computes the result on its own.',o:'One forwarder per VLAN per segment.',h:[bgp('DF result on Leaf3',[['VLAN 10','non-DF'],['VLAN 11','DF']],'new','esi')]},
+    {at:'HA',jump:1,t:'Now Host A broadcasts an ARP for Host D',
+     d:'Host A sends an ARP request for 10.1.10.44. It is broadcast in VLAN 10, so Leaf1 will flood it to every VTEP in its Type-3 flood list, including both leaves on Host D’s segment.',
+     u:'Nothing yet.',o:'A broadcast in VLAN 10.',h:[e0,a0]},
+    {at:'L1',t:'Leaf1 replicates to all three VTEPs',shell:1,
+     d:'Leaf1 sends one copy each to Leaf2, Leaf3 and Leaf4. Leaf1 does not know or care that Leaf2 and Leaf3 share a segment. You are riding the copy to Leaf2.',
+     u:'Three unicast UDP packets.',o:'Three tunnels light up.',h:[o1,oi,u,v,ie,a0]},
+    {at:'S1',t:'Copies cross the spines',shell:1,
+     d:'Your copy crosses Spine1. The copies for Leaf3 and Leaf4 hash onto Spine2.',
+     u:'Routed on the outer header.',o:'Nothing changes.',h:[oeth(M.S1,'2c:6b:f5:02:00:30','changed'),oip('10.0.0.1','10.0.0.2',63,'changed'),same(u),same(v),ie,a0],
+     clones:[['L1','S2',0],['L1','S2',1]]},
+    {at:'L2',t:'Leaf2 is the DF, so it forwards to Host D',
+     d:'Leaf2 decapsulates. Because it is the designated forwarder for VLAN 10 on this segment, it sends the broadcast down its ESI link. Leaf3 also received a copy, but as non-DF it blocks BUM traffic toward the segment.',
+     u:'The copy ends at VTEP 10.0.0.2.',o:'DF filtering decides which leaf forwards.',h:[gone(o1),gone(oi),gone(u),gone(v),same(e0),a0],
+     clones:[['S2','L3',0],['S2','L4',1]]},
+    {at:'HD',t:'Host D receives exactly one copy',
+     d:'Without DF election, both Leaf2 and Leaf3 would forward the broadcast and Host D would see a duplicate. The copy at Leaf3 stops at its ESI port (the red copy).',
+     u:'Done.',o:'One copy per multihomed host.',h:[same(e0),a0],clones:[['L3','HD',1,1,.4]],
+     note:'For traffic Host D sends into the fabric, VXLAN fabrics use local bias (RFC 8365): the leaf that received a BUM frame from the segment floods it locally, and remote members never send it back to the same segment.'}
+  ]});
+})();
+
+/* ESI Type-1 aliasing */
+(function(){
+  const t2=bgp('Type-2 from Leaf2',[['MAC',M.D],['IP','10.1.10.44'],['ESI',ESI],['label','VNI 10010'],['next hop','10.0.0.2']],'new');
+  const t2r=bgp('Type-2 from Leaf2',[['MAC',M.D],['IP','10.1.10.44'],['ESI',ESI],['label','VNI 10010'],['next hop','10.0.0.2'],['cluster list','10.0.0.11']],'changed');
+  const t1es=bgp('Type-1 A-D per ES · from Leaf3',[['RD','10.0.0.3:0'],['ESI',ESI],['Ethernet tag','MAX-ET (4294967295)'],['ESI label ext comm','single-active flag = 0 (all-active)'],['next hop','10.0.0.3']],'','esi');
+  const t1evi=bgp('Type-1 A-D per EVI · from Leaf3',[['RD','10.0.0.3:10010'],['ESI',ESI],['Ethernet tag','0'],['label','VNI 10010'],['next hop','10.0.0.3']],'','esi');
+  const e0=eth(M.A,M.D,'new'),i0=ip('10.1.10.11','10.1.10.44',64,'new'),p=icmp();
+  const ie=eth(M.A,M.D,'','Inner Ethernet'),ii=ip('10.1.10.11','10.1.10.44',64,'','Inner IPv4');
+  const o1=oeth(M.L1,M.S2,'new'),oi=oip('10.0.0.1','10.0.0.3',64,'new'),u=udp(55302,'new'),v=vx('10010 (VLAN 10)','new');
+  SC.push({id:'alias',grp:1,tab:'ESI · Type-1 aliasing',color:'esi',tunnels:[{a:'V1',b:'V3',from:6,to:8}],stops:[
+    {at:'HD',t:'Host D talks on only one link',
+     d:'Host D’s LACP hash happens to send all its outbound frames on the link to Leaf2. Leaf2 learns Host D’s MAC. Leaf3 never sees a frame from Host D, so it has nothing to advertise in a Type-2 route.',
+     u:'Traffic on the Host D → Leaf2 link only.',o:'Only one leaf knows Host D’s MAC.',h:[eth(M.D,'(various)','new'),ip('10.1.10.44','(various)',64,'new')]},
+    {at:'L2',t:'Leaf2 advertises a Type-2 route with the ESI',
+     d:'Leaf2 sends a Type-2 route for Host D. The route carries the segment’s ESI instead of zero. Both Leaf2 and Leaf3 have also been advertising Type-1 Ethernet Auto-Discovery routes for the segment since it came up.',
+     u:'BGP over TCP.',o:'MAC D is reachable via ESI '+ESI+'.',h:[tip('10.0.0.2','10.0.0.11','new'),tcp(),t2]},
+    {at:'S1',t:'The spine reflects the Type-2 route',
+     d:'Every leaf receives it. The ESI in the route is the key that remote leaves use to find all the leaves on that segment.',
+     u:'BGP over TCP, Spine1 → Leaf1.',o:'Reflection only.',h:[tip('10.0.0.11','10.0.0.1','changed'),tcp(),t2r],clones:[['L2','S2',0]]},
+    {at:'L1',t:'Leaf1 combines Type-2 with Type-1 routes',
+     d:'Leaf1 already holds Type-1 routes for this ESI from both Leaf2 and Leaf3. The per-ES route says the segment is all-active. The per-EVI route says Leaf3 can reach the segment in VNI 10010.',
+     u:'Delivered.',o:'Three routes describe one segment.',h:[same(t2r),t1es,t1evi],clones:[['S1','L3',0],['S1','L4',1]]},
+    {at:'L1',t:'Aliasing: two next hops for one MAC',hl:[['V1','V2'],['V1','V3']],
+     d:'Leaf1 resolves Host D’s MAC to the ESI, and the ESI to every leaf with a per-EVI Type-1 route for it. Host D is now reachable through Leaf2 and Leaf3 with ECMP, even though Leaf3 never advertised the MAC.',
+     lk:[[M.D,'ESI '+ESI],['ESI → VTEPs','10.0.0.2 · 10.0.0.3 (ECMP)']],
+     u:'Two underlay paths can be used.',o:'Two tunnels for one MAC.',h:[same(t2r),same(t1evi)]},
+    {at:'HA',jump:1,t:'Host A pings Host D',
+     d:'Host A already has Host D’s MAC from an earlier ARP. It sends the echo request straight to it.',
+     u:'Nothing yet.',o:'A frame for Host D in VLAN 10.',h:[e0,i0,p]},
+    {at:'L1',t:'The hash picks Leaf3',shell:1,
+     d:'Leaf1 load-balances flows for Host D across both VTEPs. This flow hashes to 10.0.0.3, the leaf that never advertised the MAC. Without aliasing, every flow would have gone to Leaf2.',
+     u:'A UDP packet from 10.0.0.1 to 10.0.0.3.',o:'The tunnel Leaf1 → Leaf3.',h:[o1,oi,u,v,ie,ii,p]},
+    {at:'S2',t:'Spine2 forwards on the outer IP',shell:1,
+     d:'Nothing new here. The spine routes on the outer header.',
+     u:'One routed hop.',o:'Nothing.',h:[oeth(M.S2,'2c:6b:f5:03:00:30','changed'),oip('10.0.0.1','10.0.0.3',63,'changed'),same(u),same(v),ie,ii,p]},
+    {at:'L3',t:'Leaf3 delivers through its segment link',
+     d:'Leaf3 decapsulates and finds Host D on its local ESI interface, because the segment is local to it. It also learns Host D’s MAC from this point on if Host D replies through it.',
+     u:'Ends at VTEP 10.0.0.3.',o:'Delivered through the ESI.',h:[gone(o1),gone(oi),gone(u),gone(v),same(e0),same(i0),p]},
+    {at:'HD',t:'Delivered, and protected against failure',
+     d:'Host D receives the ping on its Leaf3 link.',
+     u:'Done.',o:'Delivered.',h:[same(e0),same(i0),p],
+     note:'Mass withdrawal: if Leaf2’s link to Host D fails, Leaf2 withdraws its per-ES Type-1 route. Every remote leaf removes 10.0.0.2 for all MACs on that ESI at once, without waiting for each Type-2 route to be withdrawn.'}
+  ]});
+})();
+
+/* GBP egress enforcement */
+(function(){
+  const e0=eth(M.A,M.B,'new'),i0=ip('10.1.10.11','10.1.10.22',64,'new'),p=icmp();
+  const ie=eth(M.A,M.B,'','Inner Ethernet'),ii=ip('10.1.10.11','10.1.10.22',64,'','Inner IPv4');
+  const o1=oeth(M.L1,M.S1,'new'),oi=oip('10.0.0.1','10.0.0.4',64,'new'),u=udp(52214,'new'),v=vxg('10010','100','new');
+  SC.push({id:'gbpe',grp:2,tab:'GBP · egress (VXLAN-GBP)',color:'gbp',tunnels:[{a:'V1',b:'V4',from:2,to:4}],stops:[
+    {at:'HA',tag:'100',t:'An IoT camera tries to reach a point-of-sale host',
+     d:'Host A authenticated as an IoT camera and was given group tag 100. Host B is a point-of-sale terminal with tag 200. The policy denies 100 → 200. Both hosts are in VLAN 10, so a VLAN or subnet ACL cannot separate them.',
+     u:'Nothing yet.',o:'A same-VLAN frame.',h:[e0,i0,p]},
+    {at:'L1',tag:'100',t:'Leaf1 classifies the source',
+     d:'Leaf1 maps Host A’s MAC to tag 100. In the standards-based egress model, Leaf1 does not know Host B’s tag, so it cannot make a decision. It forwards and lets the destination leaf decide.',
+     lk:[[M.A,'GBP tag 100 (IoT)'],[M.B,'remote VTEP 10.0.0.4 · tag unknown here']],
+     u:'Nothing yet.',o:'A tagged source, an untagged destination.',h:[same(e0),same(i0),p]},
+    {at:'L1',tag:'100',t:'The tag rides in the VXLAN-GBP header',shell:1,
+     d:'Leaf1 encapsulates with a VXLAN-GBP header. The G bit is set and the 16-bit Group Policy ID field, which is reserved in plain VXLAN, carries tag 100.',
+     u:'A UDP packet to 10.0.0.4.',o:'The tag crosses the fabric inside the VXLAN header.',h:[o1,oi,u,v,ie,ii,p]},
+    {at:'S1',tag:'100',t:'The spine carries traffic that will be dropped',shell:1,
+     d:'Spine1 forwards the packet as usual. The fabric spends bandwidth on traffic the policy already forbids.',
+     u:'Normal routed hop.',o:'Nothing.',h:[oeth(M.S1,'2c:6b:f5:04:00:30','changed'),oip('10.0.0.1','10.0.0.4',63,'changed'),same(u),same(v),ie,ii,p]},
+    {at:'L4',tag:'100',drop:'Dropped at Leaf4 (egress)',t:'Leaf4 enforces and drops',
+     d:'Leaf4 decapsulates, reads source tag 100 from the VXLAN-GBP header, looks up Host B’s local tag 200, and applies the policy. 100 → 200 is denied, so the frame is discarded. Host B never sees it.',
+     lk:[['src tag (from header)','100'],['dst tag (local)','200'],['policy 100 → 200','deny']],
+     u:'The packet crossed two fabric links before being dropped.',o:'Dropped at the far end of the tunnel.',h:[gone(o1),gone(oi),gone(u),gone(v),ie,ii,p],
+     note:'Compare the next scenario, where the same policy is enforced on Leaf1 and the packet never enters the fabric.'}
+  ]});
+})();
+
+/* GBP ingress + ZTIS */
+(function(){
+  const tagAttr=[['route','Type-2 MAC/IP'],['MAC',M.B],['IP','10.1.10.22'],['label','VNI 10010'],['next hop','10.0.0.4'],['GBP tag','200 (vendor-specific attribute)']];
+  const b1=bgp('BGP UPDATE · EVPN',tagAttr,'new','gbp'),b2=bgp('BGP UPDATE · EVPN',tagAttr.concat([['cluster list','10.0.0.11']]),'changed','gbp');
+  const e0=eth(M.A,M.B,'new'),i0=ip('10.1.10.11','10.1.10.22',64,'new'),p=icmp();
+  SC.push({id:'ztis',grp:2,tab:'GBP · ingress + ZTIS',color:'gbp',noBytes:0,tunnels:[],stops:[
+    {at:'HB',tag:'200',t:'Host B authenticates and gets tag 200',
+     d:'Host B authenticates on Leaf4. The authentication result (from Mist or RADIUS) assigns group tag 200. Leaf4 now holds the mapping from Host B’s MAC to tag 200.',
+     u:'Nothing yet.',o:'A new MAC-to-tag mapping on Leaf4.',h:[eth(M.B,'(gateway)','new',null,'0x888e EAPOL')]},
+    {at:'L4',tag:'200',t:'Leaf4 shares the tag in the control plane',
+     d:'For ingress enforcement in an EVPN fabric, Leaf4 adds Host B’s tag to its Type-2 route as a vendor-specific attribute. The VXLAN Group Policy ID stays 0. ZTIS uses its own Update message to share the same mapping where there is no EVPN fabric, or from access points.',
+     lk:[['ZTIS Update','LLC/SNAP · protocol ID 0x000b'],['ZTIS Lookup','LLC/SNAP · protocol ID 0x000c'],['peers','unicast between ZTIS switches (found by LLDP); else multicast 5d:5b:35:ff:ff:01']],
+     u:'BGP over TCP.',o:'The destination tag travels ahead of any data.',h:[tip('10.0.0.4','10.0.0.11','new'),tcp(),b1]},
+    {at:'S1',tag:'200',t:'The spine reflects the tagged route',
+     d:'Spine1 reflects the route as usual. The tag is an attribute on the route, so the spine needs no policy configuration.',
+     u:'BGP over TCP, Spine1 → Leaf1.',o:'Reflection only.',h:[tip('10.0.0.11','10.0.0.1','changed'),tcp(),b2],clones:[['L4','S2',0]]},
+    {at:'L1',tag:'200',t:'Leaf1 learns Host B’s tag',
+     d:'Leaf1 installs Host B’s MAC with VTEP 10.0.0.4 and also records tag 200. Leaf2 and Leaf3 do the same. Every access switch now knows the destination tag before traffic arrives.',
+     lk:[[M.B,'VTEP 10.0.0.4 · VNI 10010 · tag 200']],
+     u:'Delivered.',o:'Destination tags known at ingress.',h:[same(tip('10.0.0.11','10.0.0.1')),tcp(),same(b2)],clones:[['S1','L2',0],['S1','L3',1]]},
+    {at:'HA',jump:1,tag:'100',t:'The IoT camera tries again',
+     d:'Host A, tag 100, sends the same ping to Host B.',
+     u:'Nothing yet.',o:'A same-VLAN frame.',h:[e0,i0,p]},
+    {at:'L1',tag:'100',drop:'Dropped at Leaf1 (ingress)',t:'Leaf1 drops it before encapsulation',
+     d:'Leaf1 knows both tags: 100 from Host A’s authentication and 200 from the Type-2 route. The policy denies 100 → 200, so Leaf1 drops the frame at the access port. Nothing enters the fabric.',
+     lk:[['rule order','1. destination tag rules (same VLAN only)'],['','2. destination IP prefixes, longest first'],['','3. /0 internet permit, last'],['match','tag 100 → tag 200: deny']],
+     u:'Nothing. The packet never reached the underlay.',o:'No tunnel was used.',h:[e0,i0,p].map(same),
+     note:'Policies are one-directional like ACLs, so return traffic needs its own permit. Destination-tag rules apply within the same VLAN; inter-VLAN policy uses destination IP prefixes.',
+     cmp:{head:['','VLAN / ACL at edge','GBP egress','GBP ingress + ZTIS'],rows:[
+       ['Enforced at','WAN edge or firewall','Destination leaf','Source access switch'],
+       ['Group identity in','IP and port matches','VXLAN-GBP header (Group Policy ID)','EVPN Type-2 attribute or ZTIS Update'],
+       ['Denied traffic crosses fabric','Yes, up to the enforcement point','Yes','No'],
+       ['Same-VLAN isolation','Limited','Yes','Yes'],
+       ['Needs EVPN fabric','No','Yes','No, ZTIS covers branches and APs'],
+       ['Standard','Generic','IETF VXLAN-GBP draft','Juniper extension']]}}
+  ]});
+})();
+
+/* ---------------- three.js scene ---------------- */
+const view=$('view');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x1a1a1a);
+scene.fog=new THREE.Fog(0x1a1a1a,45,110);
+const camera=new THREE.PerspectiveCamera(60,1,0.05,250);
+const rig=new THREE.Group();rig.add(camera);scene.add(rig);
+let renderer;
+try{renderer=new THREE.WebGLRenderer({antialias:true});}
+catch(e){view.innerHTML='<p style="padding:140px 24px;color:#a6a6a6">This browser could not start WebGL, so the 3D fabric cannot render.</p>';return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.xr.enabled=true;
+renderer.xr.setReferenceSpaceType('local-floor');
+view.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xdedede,0x1a1a1a,0.85));
+const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(6,24,14);scene.add(dl);
+
+const underG=new THREE.Group(),overG=new THREE.Group();scene.add(underG,overG);
+const floor=new THREE.GridHelper(44,44,0x333333,0x262626);floor.position.y=-0.02;underG.add(floor);
+const og=new THREE.GridHelper(30,30,COL.over,COL.over);og.position.y=17;og.material.transparent=true;og.material.opacity=0.07;overG.add(og);
+
+function glowTex(){const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');const r=g.createRadialGradient(64,64,0,64,64,64);r.addColorStop(0,'rgba(255,255,255,1)');r.addColorStop(.25,'rgba(255,255,255,.55)');r.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=r;g.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
+const GLOW=glowTex();
+function glow(color,s){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW,color,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false}));m.scale.set(s,s,1);return m;}
+
+function label(title,sub,color,w){
+  w=w||512;const c=document.createElement('canvas');c.width=w;c.height=150;const g=c.getContext('2d');
+  g.fillStyle='rgba(28,28,28,.85)';const r=10;g.beginPath();g.moveTo(r,0);g.arcTo(w,0,w,150,r);g.arcTo(w,150,0,150,r);g.arcTo(0,150,0,0,r);g.arcTo(0,0,w,0,r);g.fill();
+  g.fillStyle=color;g.fillRect(0,0,w,7);
+  g.fillStyle='#f4f4f4';g.font='600 60px "Barlow Condensed","Arial Narrow",sans-serif';g.fillText(title,22,72);
+  g.fillStyle='#b5b5b5';g.font='31px "IBM Plex Mono",monospace';g.fillText(sub,22,120);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));
+  const h=1.05;s.scale.set(h*w/150,h,1);return s;
+}
+function tube(a,b,r,mat){const d=new THREE.Vector3().subVectors(b,a);const len=d.length();const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,10,1,true),mat);m.position.copy(a).addScaledVector(d,.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return m;}
+
+function build(){
+  const chassis=new THREE.MeshStandardMaterial({color:0x262626,metalness:.6,roughness:.42});
+  const hostM=new THREE.MeshStandardMaterial({color:0x646569,metalness:.35,roughness:.55}); /* Aruba cool gray */
+  const mat=c=>new THREE.MeshBasicMaterial({color:c});
+  for(const id in N){
+    const n=N[id],g=new THREE.Group();g.position.copy(V3(n.p));
+    if(n.t==='leaf'||n.t==='spine'){
+      g.add(new THREE.Mesh(new THREE.BoxGeometry(3,.5,1.5),chassis));
+      const stripe=new THREE.Mesh(new THREE.BoxGeometry(3,.07,.02),mat(n.t==='spine'?COL.gbp:COL.brand));stripe.position.set(0,-.17,.76);g.add(stripe);
+      for(let i=0;i<10;i++){const l=new THREE.Mesh(new THREE.BoxGeometry(.13,.08,.02),mat(n.t==='spine'?COL.gbp:COL.under));l.position.set(-1.2+i*.27,.07,.76);g.add(l);}
+      const lb=label(n.n,n.s,n.t==='leaf'?CSS.brand:CSS.gbp);lb.position.set(0,1.15,0);g.add(lb);underG.add(g);
+    }else if(n.t==='host'){
+      const b=new THREE.Mesh(new THREE.BoxGeometry(1.1,1.7,1.1),hostM);b.position.y=.85;g.add(b);
+      const bz=new THREE.Mesh(new THREE.BoxGeometry(1.1,.12,.02),mat(COL.brand));bz.position.set(0,1.55,.56);g.add(bz);
+      for(let i=0;i<3;i++){const l=new THREE.Mesh(new THREE.BoxGeometry(.7,.05,.02),mat(0x3a3a3a));l.position.set(0,1.2-i*.2,.56);g.add(l);}
+      const lb=label(n.n,n.s,id==='HD'?CSS.esi:CSS.brand,460);lb.position.set(0,-.75,.4);g.add(lb);underG.add(g);
+    }else{
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(.75,.09,10,40),mat(COL.over));ring.rotation.x=Math.PI/2;g.add(ring);
+      g.add(glow(COL.over,1.6));
+      const lb=label(n.n,n.s,CSS.over,400);lb.position.set(0,1.05,0);g.add(lb);overG.add(g);
+    }
+  }
+  const cab=new THREE.MeshStandardMaterial({color:COL.under,emissive:COL.under,emissiveIntensity:.3,roughness:.6});
+  const esiCab=new THREE.MeshStandardMaterial({color:COL.esi,emissive:COL.esi,emissiveIntensity:.45,roughness:.6});
+  [['HA','L1'],['HC','L3'],['HB','L4']].forEach(([a,b])=>underG.add(tube(attach(a),attach(b),.05,cab)));
+  [['HD','L2'],['HD','L3']].forEach(([a,b])=>underG.add(tube(attach(a),attach(b),.07,esiCab)));
+  const es=label('ESI-LAG ae0','00:11:22:…:88:99',CSS.esi,440);es.position.set(0,4.2,4.3);underG.add(es);
+  ['L1','L2','L3','L4'].forEach(l=>['S1','S2'].forEach(s=>underG.add(tube(attach(l),attach(s),.06,cab))));
+  for(let i=1;i<=4;i++){
+    const a=attach('L'+i),b=attach('V'+i);a.y+=.3;
+    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),new THREE.LineDashedMaterial({color:COL.over,dashSize:.35,gapSize:.3,transparent:true,opacity:.45}));ln.computeLineDistances();overG.add(ln);
+  }
+  const ul=label('UNDERLAY','IP fabric · eBGP · ECMP',CSS.under,620);ul.position.set(-15.5,7,-3);underG.add(ul);
+  const ol=label('OVERLAY','EVPN · VXLAN tunnels',CSS.over,620);ol.position.set(-15.5,17.6,0);overG.add(ol);
+}
+
+const tunnels={};
+function buildTunnels(){
+  const ids=['V1','V2','V3','V4'];
+  for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+    const a=attach(ids[i]),b=attach(ids[j]),d=a.distanceTo(b);
+    const mid=a.clone().add(b).multiplyScalar(.5).add(new THREE.Vector3(0,.6+.2*d,-.22*d));
+    const curve=new THREE.QuadraticBezierCurve3(a,mid,b);
+    const m=new THREE.MeshBasicMaterial({color:COL.over,transparent:true,opacity:.13,depthWrite:false});
+    overG.add(new THREE.Mesh(new THREE.TubeGeometry(curve,48,.07,8,false),m));
+    tunnels[ids[i]+'-'+ids[j]]={curve,mat:m};
+  }
+}
+function tun(a,b){const k=a<b?a+'-'+b:b+'-'+a;return {t:tunnels[k],rev:a>b};}
+
+function makePacket(){
+  const g=new THREE.Group();
+  const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.32,1),new THREE.MeshStandardMaterial({color:0xffffff,emissive:COL.over,emissiveIntensity:1.2,roughness:.3}));
+  const shell=new THREE.Mesh(new THREE.IcosahedronGeometry(.66,1),new THREE.MeshBasicMaterial({color:COL.under,wireframe:true,transparent:true,opacity:.85}));
+  const gl=glow(COL.over,2.2);g.add(core,shell,gl);g.userData={core,shell,gl};shell.scale.setScalar(.001);return g;
+}
+function tint(p,hex){p.userData.core.material.emissive.setHex(hex);p.userData.gl.material.color.setHex(hex);}
+const packet=makePacket();scene.add(packet);
+const clones=[0,1,2].map(()=>{const p=makePacket();p.scale.setScalar(.8);scene.add(p);p.visible=false;return p;});
+const ghosts=[0,1,2].map(()=>{const g=new THREE.Group();g.add(new THREE.Mesh(new THREE.SphereGeometry(.3,16,12),new THREE.MeshBasicMaterial({color:0xffffff})));const gl=glow(COL.over,2.4);g.add(gl);g.userData.gl=gl;overG.add(g);g.visible=false;return g;});
+const active=new THREE.Mesh(new THREE.TorusGeometry(1.9,.05,8,64),new THREE.MeshBasicMaterial({color:COL.over,transparent:true,opacity:.8}));active.rotation.x=Math.PI/2;scene.add(active);
+
+/* GBP tag ring that orbits the packet */
+const tagG=new THREE.Group();scene.add(tagG);
+const tagRing=new THREE.Mesh(new THREE.TorusGeometry(.92,.045,8,48),new THREE.MeshBasicMaterial({color:COL.gbp}));tagG.add(tagRing);
+const tagSprites={};let tagSprite=null;
+function tagLabel(t){if(!tagSprites[t]){const s=label('GBP '+t,t==='100'?'IoT camera':t==='200'?'point of sale':'group',CSS.gbp,360);s.scale.multiplyScalar(.55);s.position.set(1.4,.5,0);tagSprites[t]=s;tagG.add(s);}return tagSprites[t];}
+
+const TRAIL=70,trailPts=new Float32Array(TRAIL*3),trailGeo=new THREE.BufferGeometry();
+trailGeo.setAttribute('position',new THREE.BufferAttribute(trailPts,3));
+const trail=new THREE.Line(trailGeo,new THREE.LineBasicMaterial({color:COL.over,transparent:true,opacity:.55}));scene.add(trail);
+let trailN=0;
+function pushTrail(v){trailPts.copyWithin(3,0,(TRAIL-1)*3);trailPts[0]=v.x;trailPts[1]=v.y;trailPts[2]=v.z;trailN=Math.min(TRAIL,trailN+1);trailGeo.setDrawRange(0,trailN);trailGeo.attributes.position.needsUpdate=true;}
+function resetTrail(){trailN=0;trailGeo.setDrawRange(0,0);}
+
+const vrCanvas=document.createElement('canvas');vrCanvas.width=1024;vrCanvas.height=1024;
+const vrTex=new THREE.CanvasTexture(vrCanvas);vrTex.encoding=THREE.sRGBEncoding;
+const vrPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.15,1.15),new THREE.MeshBasicMaterial({map:vrTex,transparent:true}));
+vrPanel.position.set(-1.05,1.35,-1.35);vrPanel.rotation.y=.6;vrPanel.visible=false;rig.add(vrPanel);
+
+/* ---------------- state ---------------- */
+let sc=SC[0],cur=0,moving=false,legT=0,legDur=1,auto=false,dwell=0,speed=1,mode='over';
+const fwd=new THREE.Vector3(0,0,-1),fwdH=new THREE.Vector3(0,0,-1),look=new THREE.Vector3(0,8,0);
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+controls.target.set(0,8,0);controls.enableDamping=true;controls.maxDistance=70;controls.minDistance=4;
+camera.position.set(4,13,32);controls.update();
+const overSaved={pos:camera.position.clone(),tgt:controls.target.clone()};
+
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const stopPos=i=>attach(sc.stops[i].at);
+
+function loadScenario(i){
+  sc=SC[i];cur=0;moving=false;legT=0;dwell=0;resetTrail();
+  const c=COL[sc.color];
+  trail.material.color.setHex(c);clones.forEach(p=>tint(p,c));ghosts.forEach(g=>g.userData.gl.material.color.setHex(c));active.material.color.setHex(c);
+  document.documentElement.style.setProperty('--accent',CSS[sc.color]);
+  packet.position.copy(stopPos(0));packet.visible=true;
+  document.querySelectorAll('#scen button').forEach(b=>b.setAttribute('aria-selected',+b.dataset.i===i));
+  $('scenSel').value=i;
+  buildTimeline();arrive();
+}
+function next(){if(moving||cur>=sc.stops.length-1)return;const a=stopPos(cur),b=stopPos(cur+1),d=a.distanceTo(b),tgt=sc.stops[cur+1];
+  if(d>.01&&!tgt.jump){fwd.subVectors(b,a).normalize();const h=new THREE.Vector3(fwd.x,0,fwd.z);if(h.length()>.15)fwdH.copy(h.normalize());}
+  if(tgt.jump){fwd.set(0,0,-1);fwdH.set(0,0,-1);}
+  legDur=(tgt.jump?1:Math.max(.8,d/4.2))/speed;legT=0;moving=true;}
+function prev(){if(cur===0)return;jump(cur-1);}
+function jump(i){moving=false;cur=i;packet.position.copy(stopPos(i));packet.visible=true;resetTrail();arrive();}
+function arrive(){dwell=0;renderPanel();updateTimeline();drawVR();
+  $('prev').disabled=cur===0;$('next').disabled=cur>=sc.stops.length-1;}
+
+/* ---------------- UI ---------------- */
+const GROUPS=['Forwarding','EVPN & multihoming','Segmentation'];
+GROUPS.forEach((gname,gi)=>{const row=document.createElement('div');row.className='grp';row.innerHTML=`<span>${gname}</span>`;
+  SC.forEach((s,i)=>{if(s.grp!==gi)return;const b=document.createElement('button');b.setAttribute('role','tab');b.dataset.i=i;
+    b.innerHTML=`<i style="background:${CSS[s.color]}"></i>${s.tab}`;b.onclick=()=>loadScenario(i);row.appendChild(b);});
+  $('scen').appendChild(row);
+  const og=document.createElement('optgroup');og.label=gname;SC.forEach((s,i)=>{if(s.grp===gi){const o=document.createElement('option');o.value=i;o.textContent=s.tab;og.appendChild(o);}});$('scenSel').appendChild(og);});
+$('scenSel').onchange=e=>loadScenario(+e.target.value);
+
+function buildTimeline(){const tl=$('timeline');tl.innerHTML='';sc.stops.forEach((s,i)=>{const pv=sc.stops[i-1]||{};const b=document.createElement('button');
+  const tag=s.drop?' · drop':s.shell&&!pv.shell?' · encap':!s.shell&&pv.shell?' · decap':'';
+  b.innerHTML=`<span class="n">${String(i+1).padStart(2,'0')}</span><span class="t">${N[s.at].n}${tag}</span>`;
+  b.onclick=()=>jump(i);tl.appendChild(b);});}
+function updateTimeline(){[...$('timeline').children].forEach((b,i)=>{b.className=i<cur?'done':i===cur?'cur':'';});}
+const DEFC={oeth:'under',oip:'under',udp:'under',vx:'vx',bgp:'ctrl'};
+function rowClass(h){return 'c-'+(h.c||DEFC[h.k]||'over');}
+function renderPanel(){
+  const s=sc.stops[cur],n=N[s.at];
+  const rows=s.h.map(h=>{const tag=h.st==='new'?'added':h.st==='changed'?'rewritten':h.st==='gone'?'removed':'';
+    return `<div class="hdr ${rowClass(h)}${h.st==='gone'?' gone':''}"><div class="hn">${h.nm}${h.b?`<small>${h.b} B</small>`:''}${tag?`<em>${tag}</em>`:''}</div><dl>${h.f.map(f=>`<dt>${f[0]}</dt><dd>${f[1]}</dd>`).join('')}</dl></div>`;}).join('');
+  const bytes=s.h.filter(h=>h.st!=='gone').reduce((a,h)=>a+h.b,0);
+  const showBytes=!sc.noBytes&&!s.h.some(h=>h.k==='bgp');
+  const lk=s.lk?`<div class="lookup"><span class="lk">Table on ${n.n}</span>${s.lk.map(r=>`<div><b>${r[0]}</b><span>${r[1]}</span></div>`).join('')}</div>`:'';
+  const cmp=s.cmp?`<div class="cmpwrap"><table class="cmp"><thead><tr>${s.cmp.head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${s.cmp.rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'';
+  $('panel').innerHTML=`<div class="eyebrow">Stop ${cur+1} of ${sc.stops.length} · ${n.n}${s.tag?' · GBP '+s.tag:''}</div><h2>${s.t}</h2>${s.drop?`<div class="drop">${s.drop}</div>`:''}<p>${s.d}</p>${lk}
+   <dl class="sees"><dt class="u">Underlay sees</dt><dd>${s.u}</dd><dt class="o">Overlay sees</dt><dd>${s.o}</dd></dl>
+   <div class="stackhead"><span>${s.h.some(h=>h.k==='bgp')?'Headers and route at this stop':'Headers at this stop'}</span>${showBytes?`<span class="tot">${bytes} B on the wire</span>`:''}</div>
+   <div class="stack">${rows}</div>${cmp}${s.note?`<div class="note">${s.note}</div>`:''}`;
+  $('panel').scrollTop=0;
+}
+function wrap(g,text,x,y,maxW,lh){const words=text.split(' ');let line='';for(const w of words){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){g.fillText(line,x,y);y+=lh;line=w;}else line=t;}if(line){g.fillText(line,x,y);y+=lh;}return y;}
+const VRC={under:CSS.under,vx:'#00e8cf',ctrl:CSS.ctrl,esi:CSS.esi,gbp:CSS.gbp,l3:CSS.l3,over:CSS.over,drop:CSS.drop};
+function drawVR(){
+  const g=vrCanvas.getContext('2d'),s=sc.stops[cur],n=N[s.at];
+  g.clearRect(0,0,1024,1024);g.fillStyle='rgba(34,34,34,.95)';g.fillRect(0,0,1024,1024);
+  g.fillStyle=CSS[sc.color];g.fillRect(0,0,1024,10);
+  g.fillStyle='#a6a6a6';g.font='30px "IBM Plex Mono",monospace';g.fillText(`STOP ${cur+1}/${sc.stops.length} · ${n.n.toUpperCase()}${s.tag?' · GBP '+s.tag:''}`,40,64);
+  g.fillStyle='#f4f4f4';g.font='600 56px "Barlow Condensed","Arial Narrow",sans-serif';let y=wrap(g,s.t,40,132,944,58);
+  if(s.drop){g.fillStyle=CSS.drop;g.font='600 32px "IBM Plex Sans",sans-serif';g.fillText('✕ '+s.drop,40,y+10);y+=50;}
+  g.font='28px "IBM Plex Sans",sans-serif';g.fillStyle=CSS.under;y=wrap(g,'Underlay: '+s.u,40,y+10,944,36);g.fillStyle=CSS.over;y=wrap(g,'Overlay: '+s.o,40,y+4,944,36);
+  y+=14;
+  for(const h of s.h){if(y>920)break;g.globalAlpha=h.st==='gone'?.35:1;g.fillStyle='#2b2b2b';g.fillRect(40,y,944,74);g.fillStyle=VRC[h.c||DEFC[h.k]||'over'];g.fillRect(40,y,10,74);
+    g.fillStyle='#f4f4f4';g.font='600 30px "IBM Plex Sans",sans-serif';g.fillText(h.nm+(h.st==='new'?'  + added':h.st==='gone'?'  − removed':h.st==='changed'?'  ~ rewritten':''),66,y+32);
+    g.fillStyle='#b5b5b5';g.font='24px "IBM Plex Mono",monospace';g.fillText(h.f.slice(0,2).map(f=>f[0]+' '+f[1]).join('   ').slice(0,66),66,y+62);y+=84;}
+  g.globalAlpha=1;g.fillStyle='#727272';g.font='26px "IBM Plex Mono",monospace';g.fillText('Trigger: next hop   ·   Grip: ride / overview',40,1000);
+  vrTex.needsUpdate=true;
+}
+function setMode(m){mode=m;$('vRide').setAttribute('aria-pressed',m==='ride');$('vOver').setAttribute('aria-pressed',m==='over');
+  if(renderer.xr.isPresenting)return;
+  if(m==='over'){controls.enabled=true;camera.position.copy(overSaved.pos);controls.target.copy(overSaved.tgt);controls.update();}
+  else{overSaved.pos.copy(camera.position);overSaved.tgt.copy(controls.target);controls.enabled=false;look.copy(packet.position);}}
+$('next').onclick=next;$('prev').onclick=prev;$('restart').onclick=()=>jump(0);
+$('auto').onclick=()=>{auto=!auto;$('auto').setAttribute('aria-pressed',auto);dwell=0;if(auto&&!moving&&cur>=sc.stops.length-1)jump(0);};
+$('vRide').onclick=()=>setMode('ride');$('vOver').onclick=()=>setMode('over');
+$('tU').onclick=()=>{underG.visible=!underG.visible;$('tU').setAttribute('aria-pressed',underG.visible);};
+$('tO').onclick=()=>{overG.visible=!overG.visible;$('tO').setAttribute('aria-pressed',overG.visible);};
+$('speed').onchange=e=>{speed=parseFloat(e.target.value)||1;};
+addEventListener('keydown',e=>{if(e.target.tagName==='SELECT')return;if(e.code==='Space'||e.key==='ArrowRight'){e.preventDefault();next();}else if(e.key==='ArrowLeft')prev();else if(e.key==='v'||e.key==='V')setMode(mode==='ride'?'over':'ride');});
+let toastT;function toast(msg){const t=$('toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,6000);}
+
+/* ---------------- WebXR ---------------- */
+const vrBtn=$('vr');
+if(!navigator.xr){vrBtn.textContent='VR: needs a headset browser';vrBtn.disabled=true;}
+else navigator.xr.isSessionSupported('immersive-vr').then(ok=>{if(!ok){vrBtn.textContent='VR not supported here';vrBtn.disabled=true;}}).catch(()=>{vrBtn.textContent='VR blocked here';vrBtn.disabled=true;});
+vrBtn.onclick=async()=>{
+  if(renderer.xr.isPresenting){renderer.xr.getSession().end();return;}
+  try{const s=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']});
+    await renderer.xr.setSession(s);controls.enabled=false;vrPanel.visible=true;setMode('ride');vrBtn.textContent='Exit VR';
+    s.addEventListener('end',()=>{vrPanel.visible=false;rig.position.set(0,0,0);rig.rotation.set(0,0,0);vrBtn.textContent='Enter VR';camera.position.copy(overSaved.pos);setMode('over');});
+  }catch(err){toast('This page could not start VR here. Host the HTML file on your own site and open it in the headset browser.');}
+};
+[0,1].forEach(i=>{const c=renderer.xr.getController(i);c.addEventListener('select',next);c.addEventListener('squeeze',()=>setMode(mode==='ride'?'over':'ride'));rig.add(c);});
+
+/* ---------------- loop ---------------- */
+function resize(){const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);renderer.domElement.style.width=w+'px';renderer.domElement.style.height=h+'px';camera.aspect=w/h;camera.updateProjectionMatrix();}
+new ResizeObserver(resize).observe(view);resize();
+
+let last=performance.now(),yaw=0,trailAcc=0;
+const tmp=new THREE.Vector3(),tmp2=new THREE.Vector3();
+function tick(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  const tgt=moving?sc.stops[cur+1]:null;
+  if(moving){legT+=dt/legDur;
+    if(legT>=1){legT=1;moving=false;cur++;packet.position.copy(stopPos(cur));packet.visible=true;if(sc.stops[cur].jump)resetTrail();arrive();}
+    else{packet.position.lerpVectors(stopPos(cur),stopPos(cur+1),ease(legT));packet.visible=!tgt.jump;}}
+  else if(auto&&cur<sc.stops.length-1){dwell+=dt;if(dwell>5/speed)next();}
+  const P=packet.position,st=sc.stops[cur];
+  trailAcc+=dt;if(trailAcc>.03&&packet.visible){trailAcc=0;pushTrail(P);}
+  /* packet appearance */
+  const dropped=!moving&&st.drop;
+  tint(packet,dropped?COL.drop:COL[sc.color]);
+  const sh=packet.userData.shell;
+  const ns=THREE.MathUtils.lerp(sh.scale.x,st.shell?1:.001,1-Math.exp(-dt*6));sh.scale.setScalar(Math.max(.001,ns));sh.rotation.y+=dt*.6;sh.rotation.x+=dt*.25;
+  packet.userData.core.rotation.y-=dt*1.2;
+  packet.scale.setScalar(dropped?(REDUCE?.6:.55+.12*Math.sin(now/120)):1);
+  /* GBP tag */
+  const tagNow=(moving&&tgt.jump)?null:(moving?(tgt.tag&&st.tag?st.tag:null):st.tag);
+  tagG.visible=!!tagNow&&packet.visible;
+  if(tagNow){tagG.position.copy(P);tagRing.rotation.x=Math.PI/2+.5*Math.sin(now/700);tagRing.rotation.z+=dt*1.5;
+    const s=tagLabel(tagNow);if(tagSprite!==s){if(tagSprite)tagSprite.visible=false;tagSprite=s;}s.visible=true;
+    tagRing.material.color.setHex(dropped?COL.drop:COL.gbp);}
+  const a=attach(st.at);active.position.set(a.x,N[st.at].t==='host'?.05:a.y-.32,a.z);
+  active.material.color.setHex(dropped?COL.drop:COL[sc.color]);
+  if(!REDUCE)active.scale.setScalar(1+.06*Math.sin(now/300));
+  /* overlay ghosts */
+  const g=cur+(moving?ease(legT):0);
+  ghosts.forEach(x=>x.visible=false);
+  for(const k in tunnels){tunnels[k].mat.opacity=.13;tunnels[k].mat.color.setHex(COL.over);}
+  (sc.tunnels||[]).forEach((tu,i)=>{const {t,rev}=tun(tu.a,tu.b);if(g>=tu.from&&g<=tu.to){let f=(g-tu.from)/(tu.to-tu.from);if(rev)f=1-f;
+    t.mat.opacity=.55;t.mat.color.setHex(COL[sc.color]);if(ghosts[i]){ghosts[i].visible=true;ghosts[i].position.copy(t.curve.getPoint(f));}}});
+  if(st.hl&&!moving)st.hl.forEach(pr=>{const {t}=tun(pr[0],pr[1]);t.mat.opacity=.4+.25*Math.sin(now/250);t.mat.color.setHex(COL[sc.color]);});
+  /* clones: [from,to,side,drop,stopFrac] */
+  clones.forEach(c=>c.visible=false);
+  const cs=moving?(tgt.clones||[]):(st.clones||[]);
+  cs.forEach((c,i)=>{const cl=clones[i];if(!cl)return;cl.visible=true;const sf=c[4]||1;const e=moving?ease(legT):1;const f=e*sf;
+    cl.position.lerpVectors(attach(c[0]),attach(c[1]),f);cl.position.z+=(c[2]?.45:-.45)*(1-Math.abs(2*e-1))*.6;
+    const isDrop=c[3]&&e>=.98;tint(cl,isDrop?COL.drop:COL[sc.color]);cl.scale.setScalar(isDrop?.55:.8);
+    cl.userData.shell.scale.setScalar(Math.max(.001,sh.scale.x*(isDrop?0:1)));});
+  /* camera */
+  const k=1-Math.exp(-dt*(REDUCE?10:3));
+  if(renderer.xr.isPresenting){
+    if(mode==='ride'){tmp.copy(P).addScaledVector(fwdH,-2.2);tmp.y-=1.45;rig.position.lerp(tmp,k);
+      const ty=Math.atan2(-fwdH.x,-fwdH.z);let d=ty-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));yaw+=d*k;rig.rotation.y=yaw;}
+    else{rig.position.lerp(tmp.set(0,5.5,27),k);yaw+=(0-yaw)*k;rig.rotation.y=yaw;}
+  }else if(mode==='ride'){
+    tmp.copy(P).addScaledVector(fwdH,-4.4);tmp.y+=1.9;camera.position.lerp(tmp,k);
+    look.lerp(tmp2.copy(P).addScaledVector(fwd,1.2),k);camera.lookAt(look);
+  }else controls.update();
+  renderer.render(scene,camera);
+}
+
+const ready=Promise.race([Promise.all([document.fonts.load('600 60px "Barlow Condensed"'),document.fonts.load('31px "IBM Plex Mono"'),document.fonts.load('28px "IBM Plex Sans"')]).catch(()=>{}),new Promise(r=>setTimeout(r,1800))]);
+ready.then(()=>{build();buildTunnels();loadScenario(0);renderer.setAnimationLoop(tick);});
+})();
+</script>
+
+</body>
+</html>

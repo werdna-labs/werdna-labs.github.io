@@ -5,8 +5,6 @@ updated: 2026-08-11
 section: Juniper SRX
 ---
 
-# vSRX Multinode High Availability on ESXi 8
-
 ## Working Draft - Probably don't do this yet but maybe do; it probably works
 
 A two-node **Multinode High Availability (MNHA)** vSRX 3.0 build, deployed firewall-on-a-stick on a
