@@ -238,6 +238,7 @@ body.kid .cmp td,body.kid .cmp td:last-child,body.kid .cmp tbody th{color:var(--
       <button class="btn" id="tO" aria-pressed="true"><span class="t-only">Overlay</span><span class="k-only">Tunnels</span></button>
       <label class="row" style="gap:6px"><span class="kbd" style="display:inline">Speed</span>
         <select id="speed"><option value="0.6">0.6×</option><option value="1" selected>1×</option><option value="1.8">1.8×</option></select></label>
+      <button class="btn" id="snd" aria-pressed="true" title="Sound effects">Sound</button>
       <span class="spacer"></span>
       <button class="btn" id="kid" aria-pressed="false" title="Explain it like I'm five (K)"><span class="crayon" aria-hidden="true"></span>Crayon mode</button>
       <button class="btn" id="vr">Enter VR</button>
@@ -638,7 +639,7 @@ l2:[
 sym:[
  {t:"Amy writes to Cleo on Oak Street",d:"Cleo lives on a different street, Oak Street. Amy doesn't know how to get there, so she hands the note to the helper desk at her post office. Every post office has the same helper desk with the same name, like every school having a front office."},
  {t:"Post Office 1 looks up Cleo",d:"The address book says Cleo gets mail through Post Office 3. Post Office 1 doesn't even need a map of Oak Street. It only needs to know which office to send it to, like knowing your cousin's school without knowing their classroom.",l:[["Cleo","send through Post Office 3, whole-town tunnel"]]},
- {t:"Wrapped with the whole-town tunnel number",d:"Into the big envelope it goes. This time the envelope gets a special number that means “for anywhere in our town” instead of one street's number. Post Office 1 also updates the corners of the note, like a relay runner handing off the baton."},
+ {t:"Wrapped with the whole-town tunnel number",d:"Into the big envelope it goes. This time the envelope gets a special number that means “for anywhere in our town” instead of one street's number. Post Office 1 also crosses out the helper-desk name on the note and writes Post Office 3's name instead, like a relay runner handing the baton to the next runner."},
  {t:"Highway Hub 2 carries it",d:"This time the envelope took Hub 2. Hubs don't care what's inside. They're like the conveyor belt at the airport: bags on, bags off."},
  {t:"Post Office 3 walks it over to Oak Street",d:"Post Office 3 opens the big envelope, sees the whole-town number, and carries the note to Oak Street. Two post offices each did one step, like two relay runners sharing a race."},
  {t:"Cleo gets the note",d:"Cleo can tell two helpers touched the note: Post Office 1 and Post Office 3. The highway hubs stay invisible, like the stage crew in a school play."}],
@@ -800,7 +801,7 @@ function sunTex(){const S=256,c=document.createElement('canvas');c.width=c.heigh
 const view=$('view');
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x1a1a1a);
-scene.fog=new THREE.Fog(0x1a1a1a,45,110);
+scene.fog=new THREE.Fog(0x15171c,45,110);
 const camera=new THREE.PerspectiveCamera(60,1,0.05,250);
 const rig=new THREE.Group();rig.add(camera);scene.add(rig);
 let renderer;
@@ -968,11 +969,122 @@ let trailN=0;
 function pushTrail(v){trailPts.copyWithin(3,0,(TRAIL-1)*3);trailPts[0]=v.x;trailPts[1]=v.y;trailPts[2]=v.z;trailN=Math.min(TRAIL,trailN+1);trailGeo.setDrawRange(0,trailN);trailGeo.attributes.position.needsUpdate=true;}
 function resetTrail(){trailN=0;trailGeo.setDrawRange(0,0);}
 
-const vrCanvas=document.createElement('canvas');vrCanvas.width=1024;vrCanvas.height=1024;
-const vrTex=new THREE.CanvasTexture(vrCanvas);vrTex.encoding=THREE.sRGBEncoding;
-const vrPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.15,1.15),new THREE.MeshBasicMaterial({map:vrTex,transparent:true}));
-vrPanel.position.set(-1.05,1.35,-1.35);vrPanel.rotation.y=.6;vrPanel.visible=false;rig.add(vrPanel);
+/* ---------------- sky, ambient traffic, sound ---------------- */
+const skyT=new THREE.Group(),skyK=new THREE.Group();scene.add(skyT,skyK);skyK.visible=false;
+{const dome=new THREE.Mesh(new THREE.SphereGeometry(130,24,16),new THREE.MeshBasicMaterial({color:0x0f1116,side:THREE.BackSide,fog:false,depthWrite:false}));dome.renderOrder=-2;skyT.add(dome);
+ const n=1100,p=new Float32Array(n*3);for(let i=0;i<n;i++){const u=Math.random()*Math.PI*2,v=Math.acos(2*Math.random()-1),r=124;p[i*3]=r*Math.sin(v)*Math.cos(u);p[i*3+1]=Math.abs(r*Math.cos(v))*.9+2;p[i*3+2]=r*Math.sin(v)*Math.sin(u);}
+ const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.BufferAttribute(p,3));
+ const stars=new THREE.Points(sg,new THREE.PointsMaterial({color:0xd8dfee,size:.75,sizeAttenuation:true,fog:false,transparent:true,opacity:.85,depthWrite:false}));stars.renderOrder=-1;skyT.add(stars);
+ const pt=PAPER.clone();pt.wrapS=pt.wrapT=THREE.RepeatWrapping;pt.repeat.set(6,3);pt.needsUpdate=true;
+ const kd=new THREE.Mesh(new THREE.SphereGeometry(130,24,16),new THREE.MeshBasicMaterial({map:pt,side:THREE.BackSide,fog:false,depthWrite:false}));kd.renderOrder=-2;skyK.add(kd);}
+/* ambient traffic: motes drifting along the cables so the fabric never looks idle */
+const LINKS=[['HA','L1'],['HC','L3'],['HB','L4'],['HD','L2'],['HD','L3']];['L1','L2','L3','L4'].forEach(l=>['S1','S2'].forEach(s=>LINKS.push([l,s])));
+const LA=LINKS.map(l=>attach(l[0])),LB=LINKS.map(l=>attach(l[1]));
+const MN=52,mPos=new Float32Array(MN*3),mL=[],mT=[],mS=[];
+for(let i=0;i<MN;i++){mL.push(i%LINKS.length);mT.push(Math.random());mS.push((.12+Math.random()*.22)*(Math.random()<.5?1:-1));}
+const mGeo=new THREE.BufferGeometry();mGeo.setAttribute('position',new THREE.BufferAttribute(mPos,3));
+const mMat=new THREE.PointsMaterial({color:0xffb060,size:.16,sizeAttenuation:true,transparent:true,opacity:.7,depthWrite:false});
+const motes=new THREE.Points(mGeo,mMat);underG.add(motes);
+function updateMotes(dt){for(let i=0;i<MN;i++){let t=mT[i]+dt*mS[i]*speed;if(t>1)t-=1;if(t<0)t+=1;mT[i]=t;const a=LA[mL[i]],b=LB[mL[i]];mPos[i*3]=a.x+(b.x-a.x)*t;mPos[i*3+1]=a.y+(b.y-a.y)*t+.12;mPos[i*3+2]=a.z+(b.z-a.z)*t;}mGeo.attributes.position.needsUpdate=true;}
+/* sound: a whoosh for each tunnel ride, a chime on arrival, a thud on a drop. Everything is synthesized, nothing is downloaded. */
+let AC=null,master=null,NOISE=null,sndOn=true,whoosh=null;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.45;master.connect(AC.destination);}catch(e){return null;}}if(AC.state==='suspended')AC.resume().catch(()=>{});return AC;}
+function noiseBuf(a){const n=a.sampleRate*2,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;return b;}
+function playWhoosh(dur){const a=sndOn&&ac();if(!a)return;stopWhoosh();const src=a.createBufferSource();src.buffer=NOISE||(NOISE=noiseBuf(a));src.loop=true;
+  const f=a.createBiquadFilter();f.type='bandpass';f.Q.value=KID?.9:1.8;const g=a.createGain(),t=a.currentTime;
+  f.frequency.setValueAtTime(KID?260:180,t);f.frequency.exponentialRampToValueAtTime(KID?1000:2600,t+dur*.5);f.frequency.exponentialRampToValueAtTime(KID?260:360,t+dur);
+  const v=KID?.32:.42;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+dur*.2);g.gain.setValueAtTime(v,t+dur*.72);g.gain.linearRampToValueAtTime(0,t+dur);
+  src.connect(f);f.connect(g);g.connect(master);src.start(t);src.stop(t+dur+.05);whoosh=src;}
+function stopWhoosh(){if(whoosh){try{whoosh.stop();}catch(e){}whoosh=null;}}
+function tone(fr,t0,dur,type,vol){const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=fr;g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(vol||.25,t0+.01);g.gain.exponentialRampToValueAtTime(.001,t0+dur);o.connect(g);g.connect(master);o.start(t0);o.stop(t0+dur+.02);}
+function chime(kind){const a=sndOn&&ac();if(!a)return;const t=a.currentTime;
+  if(kind==='drop'){tone(150,t,.35,'square',.16);tone(100,t+.13,.55,'square',.16);}
+  else if(KID){tone(659,t,.22,'triangle',.22);tone(880,t+.12,.34,'triangle',.22);}
+  else{tone(880,t,.16,'sine',.18);tone(1318,t+.05,.3,'sine',.1);}}
+function click(){const a=sndOn&&ac();if(!a)return;tone(KID?520:1200,a.currentTime,.06,KID?'triangle':'sine',.1);}
+function toggleSound(){sndOn=!sndOn;$('snd').setAttribute('aria-pressed',sndOn);if(!sndOn)stopWhoosh();else ac();drawCtl();}
 
+/* ---------------- VR UI: info card (left), control board (right), lasers, comfort blink ---------------- */
+const vrCanvas=document.createElement('canvas');vrCanvas.width=1024;vrCanvas.height=1024;
+const vrTex=new THREE.CanvasTexture(vrCanvas);vrTex.encoding=THREE.sRGBEncoding;vrTex.anisotropy=4;
+const vrUI=new THREE.Group();vrUI.visible=false;rig.add(vrUI);
+const vrPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.3,1.3),new THREE.MeshBasicMaterial({map:vrTex,transparent:true}));
+vrPanel.position.set(-1.28,1.52,-1.42);vrPanel.rotation.y=.74;vrUI.add(vrPanel);
+const ctlCanvas=document.createElement('canvas');ctlCanvas.width=1024;ctlCanvas.height=880;
+const ctlTex=new THREE.CanvasTexture(ctlCanvas);ctlTex.encoding=THREE.sRGBEncoding;ctlTex.anisotropy=4;
+const ctlPanel=new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.074),new THREE.MeshBasicMaterial({map:ctlTex,transparent:true}));
+ctlPanel.position.set(1.28,1.42,-1.42);ctlPanel.rotation.y=-.74;vrUI.add(ctlPanel);
+let CTL=[],hoverIdx=-1,eyeH=1.55;
+function rr(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();}
+function fitFont(g,t,maxW,size,fam,weight){for(;size>14;size-=2){g.font=`${weight||''} ${size}px ${fam}`;if(g.measureText(t).width<=maxW)break;}return size;}
+function drawCtl(){
+  const g=ctlCanvas.getContext('2d'),W=ctlCanvas.width,H=ctlCanvas.height;CTL=[];
+  const kid=KID,mute=kid?'#5b5560':'#a6a6a6',fD=kid?'"Gaegu",cursive':'"Barlow Condensed","Arial Narrow",sans-serif',fB=kid?'"Patrick Hand",cursive':'"IBM Plex Sans",sans-serif';
+  g.clearRect(0,0,W,H);
+  if(kid){g.drawImage(PAPER.image,0,0,W,H);wobbleRect(g,6,6,W-12,H-12,6);g.lineWidth=6;g.strokeStyle=INKC;g.lineJoin='round';g.stroke();}
+  else{rr(g,0,0,W,H,16);g.fillStyle='rgba(34,34,34,.95)';g.fill();}
+  g.fillStyle=CS(sc.color);g.fillRect(0,0,W,kid?16:10);
+  const btn=(x,y,w,h,label,act,on,col)=>{const i=CTL.length;CTL.push({x,y,w,h,label,act});const hov=hoverIdx===i;
+    if(kid){wobbleRect(g,x,y,w,h,4);g.fillStyle=on?'#f7d257':hov?'#fdf3c6':'#fffaf0';g.fill();g.lineWidth=hov?6:3.5;g.strokeStyle=INKC;g.stroke();}
+    else{rr(g,x,y,w,h,12);g.fillStyle=on?'#f4f4f4':hov?'#3d3d3d':'#2b2b2b';g.fill();g.lineWidth=hov?3:2;g.strokeStyle=hov||on?'#f4f4f4':'#4a4a4a';g.stroke();}
+    if(col){g.fillStyle=col;g.beginPath();g.arc(x+26,y+h/2,9,0,Math.PI*2);g.fill();if(kid){g.lineWidth=2;g.strokeStyle=INKC;g.stroke();}}
+    g.fillStyle=kid?INKC:(on?'#111':'#f4f4f4');fitFont(g,label,w-(col?62:28),h>80?34:27,kid?fD:fB,kid?700:600);g.textBaseline='middle';g.fillText(label,x+(col?48:16),y+h/2+1);g.textBaseline='alphabetic';};
+  g.fillStyle=mute;g.font=`${kid?'700 ':''}30px ${fD}`;g.fillText(kid?'Buttons':'CONTROLS',36,66);
+  let y=90;const h=88,gap=16;
+  btn(36,y,222,h,'◀ Back',prev,false);
+  btn(274,y,262,h,kid?'Next stop ▶':'Next hop ▶',next,false);
+  btn(552,y,200,h,'Auto',toggleAuto,auto);
+  btn(768,y,220,h,kid?'Start over':'Restart',()=>jump(0),false);
+  y+=h+gap;
+  btn(36,y,300,h,mode==='ride'?(kid?'View: ride along':'View: ride'):(kid?"View: bird's-eye":'View: overview'),()=>setMode(mode==='ride'?'over':'ride'),false);
+  btn(352,y,316,h,'Crayon mode',()=>applyMode(!KID),KID);
+  btn(684,y,304,h,sndOn?'Sound: on':'Sound: off',toggleSound,sndOn);
+  y+=h+gap+14;
+  (KID?KGROUPS:GROUPS).forEach((gn,gi)=>{g.fillStyle=mute;g.font=`${kid?'700 ':''}26px ${fD}`;g.fillText(kid?gn:gn.toUpperCase(),36,y+22);y+=36;
+    let x=36;const bw=296,bh=66;SC.forEach((s,i)=>{if(s.grp!==gi)return;if(x+bw>W-36){x=36;y+=bh+12;}btn(x,y,bw,bh,KID?KTAB[s.id]:s.tab,()=>loadScenario(i),s===sc,CS(s.color));x+=bw+16;});y+=bh+22;});
+  g.fillStyle=mute;g.font=`24px ${fB}`;
+  wrap(g,kid?'Point and pull the trigger to press a button. Trigger anywhere else: next stop. Grip: ride along / bird\'s-eye. Thumbstick left / right: back / next. A or X: crayon mode. B or Y: start over.':'Point and pull the trigger to press a button. Trigger elsewhere: next hop. Grip: ride / overview. Thumbstick ◀ ▶: back / next. A/X: crayon mode. B/Y: restart.',36,y+18,W-72,31);
+  ctlTex.needsUpdate=true;
+}
+/* controllers: laser + dot, a simple grip model, and events */
+const rayc=new THREE.Raycaster(),rMat=new THREE.Matrix4();
+function buzz(src,i,ms){try{const h=src&&src.gamepad&&src.gamepad.hapticActuators;if(h&&h[0])h[0].pulse(i,ms);}catch(e){}}
+function controllerModel(){const g=new THREE.Group();const m=new THREE.MeshStandardMaterial({color:0x3a3a3f,roughness:.6,metalness:.3});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.017,.024,.11,12),m);body.rotation.x=1.35;body.position.set(0,-.012,.045);g.add(body);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.034,.006,8,24),new THREE.MeshBasicMaterial({color:0x01a982}));ring.rotation.x=Math.PI/2;ring.position.set(0,.018,-.012);g.add(ring);g.userData.ring=ring;return g;}
+const grips=[];
+const ctls=[0,1].map(i=>{const c=renderer.xr.getController(i);
+  const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,-1)]),new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.55}));line.scale.z=3;c.add(line);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.014,8,8),new THREE.MeshBasicMaterial({color:0xffffff}));dot.visible=false;c.add(dot);
+  c.userData={line,dot,hover:-1,src:null};
+  c.addEventListener('connected',e=>{c.userData.src=e.data;});c.addEventListener('disconnected',()=>{c.userData.src=null;});
+  c.addEventListener('selectstart',()=>{const h=c.userData.hover;if(h>=0&&CTL[h]){CTL[h].act();click();buzz(c.userData.src,.6,40);drawCtl();}else next();});
+  c.addEventListener('squeezestart',()=>{setMode(mode==='ride'?'over':'ride');buzz(c.userData.src,.4,30);});
+  rig.add(c);const grip=renderer.xr.getControllerGrip(i);const gm=controllerModel();grip.add(gm);grips.push(gm);rig.add(grip);return c;});
+function updateLasers(){let changed=false;
+  ctls.forEach(c=>{const u=c.userData;if(!c.visible){if(u.hover>=0){u.hover=-1;changed=true;}return;}
+    rMat.identity().extractRotation(c.matrixWorld);rayc.ray.origin.setFromMatrixPosition(c.matrixWorld);rayc.ray.direction.set(0,0,-1).applyMatrix4(rMat);
+    const hit=rayc.intersectObject(ctlPanel,false)[0];let h=-1;
+    if(hit&&hit.uv){const px=hit.uv.x*ctlCanvas.width,py=(1-hit.uv.y)*ctlCanvas.height;h=CTL.findIndex(b=>px>=b.x&&px<=b.x+b.w&&py>=b.y&&py<=b.y+b.h);
+      u.line.scale.z=hit.distance;u.dot.visible=true;u.dot.position.set(0,0,-hit.distance);}
+    else{u.line.scale.z=3;u.dot.visible=false;}
+    if(h!==u.hover){u.hover=h;changed=true;}});
+  if(changed){const hv=ctls.map(c=>c.userData.hover).find(h=>h>=0);const nh=hv===undefined?-1:hv;if(nh!==hoverIdx){hoverIdx=nh;drawCtl();}}}
+const gpState=new WeakMap();
+function pollGamepads(){const s=renderer.xr.getSession();if(!s)return;
+  for(const src of s.inputSources){const gp=src.gamepad;if(!gp)continue;let st=gpState.get(src);if(!st){st={ax:0,a:false,b:false};gpState.set(src,st);}
+    const ax=gp.axes.length>=4?gp.axes[2]:(gp.axes[0]||0);
+    if(ax>.6&&st.ax<=.6){next();buzz(src,.3,25);}else if(ax<-.6&&st.ax>=-.6){prev();buzz(src,.3,25);}st.ax=ax;
+    const a=!!(gp.buttons[4]&&gp.buttons[4].pressed),b=!!(gp.buttons[5]&&gp.buttons[5].pressed);
+    if(a&&!st.a){applyMode(!KID);click();}if(b&&!st.b){jump(0);click();}st.a=a;st.b=b;}}
+/* comfort blink: any teleport that the tunnel does not already hide happens behind a quick fade */
+const blinkMat=new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:0,depthTest:false,depthWrite:false,side:THREE.BackSide,fog:false});
+const blinkMesh=new THREE.Mesh(new THREE.SphereGeometry(.4,12,8),blinkMat);blinkMesh.renderOrder=999;blinkMesh.visible=false;camera.add(blinkMesh);
+let blinkT=-1;const want=new THREE.Vector3();
+/* the warp packet rides inside the VR tunnel, in front of the viewer, while the real one is hidden */
+const warpPk=makePacket();warpPk.visible=false;scene.add(warpPk);
+function syncPacket(dst,dropped,pk,now){tint(dst,dropped?C('drop'):C(sc.color));const sh=packet.userData.shell;dst.userData.shell.scale.copy(sh.scale);dst.userData.shell.rotation.copy(sh.rotation);dst.userData.core.rotation.copy(packet.userData.core.rotation);
+  if(KID){const ks=packet.userData.kid,d=dst.userData.kid;if(d.material.map!==PIP[pk])d.material.map=PIP[pk];d.material.rotation=ks.material.rotation;d.scale.copy(ks.scale);d.position.copy(ks.position);}}
 
 /* ---------------- ride tunnels: star warp (regular) and crayon street tunnel (crayon) ----------------
    Both are built along +Z from the camera and follow it each frame, pointed at the packet. */
@@ -1063,9 +1175,10 @@ function loadScenario(i){
 function next(){if(moving||cur>=sc.stops.length-1)return;const a=stopPos(cur),b=stopPos(cur+1),d=a.distanceTo(b),tgt=sc.stops[cur+1];
   if(d>.01&&!tgt.jump){fwd.subVectors(b,a).normalize();const h=new THREE.Vector3(fwd.x,0,fwd.z);if(h.length()>.15)fwdH.copy(h.normalize());}
   if(tgt.jump){fwd.set(0,0,-1);fwdH.set(0,0,-1);}
-  legD=tgt.jump?0:d;legDur=(tgt.jump?1:d<.5?.8:mode==='ride'?Math.max(1.6,d/5):Math.max(.8,d/4.2))/speed;legT=0;moving=true;}
+  legD=tgt.jump?0:d;legDur=(tgt.jump?1:d<.5?.8:mode==='ride'?Math.max(1.6,d/5):Math.max(.8,d/4.2))/speed;legT=0;moving=true;
+  if(mode==='ride'&&legD>.5&&!tgt.jump){playWhoosh(legDur);if(renderer.xr.isPresenting)drawVRTravel(tgt.at);}}
 function prev(){if(cur===0)return;jump(cur-1);}
-function jump(i){moving=false;cur=i;packet.position.copy(stopPos(i));packet.visible=true;resetTrail();arrive();}
+function jump(i){moving=false;stopWhoosh();cur=i;packet.position.copy(stopPos(i));packet.visible=true;resetTrail();arrive();}
 function arrive(){dwell=0;renderPanel();updateTimeline();drawVR();
   $('prev').disabled=cur===0;$('next').disabled=cur>=sc.stops.length-1;}
 
@@ -1107,19 +1220,28 @@ function renderPanel(){
 function wrap(g,text,x,y,maxW,lh){const words=text.split(' ');let line='';for(const w of words){const t=line?line+' '+w:w;if(g.measureText(t).width>maxW&&line){g.fillText(line,x,y);y+=lh;line=w;}else line=t;}if(line){g.fillText(line,x,y);y+=lh;}return y;}
 const VRC={under:CSS.under,vx:'#00e8cf',ctrl:CSS.ctrl,esi:CSS.esi,gbp:CSS.gbp,l3:CSS.l3,over:CSS.over,drop:CSS.drop};
 function drawVR(){
+  drawCtl();
   if(KID)return drawVRKid();
   const g=vrCanvas.getContext('2d'),s=sc.stops[cur],n=N[s.at];
-  g.clearRect(0,0,1024,1024);g.fillStyle='rgba(34,34,34,.95)';g.fillRect(0,0,1024,1024);
+  g.clearRect(0,0,1024,1024);rr(g,0,0,1024,1024,16);g.fillStyle='rgba(34,34,34,.95)';g.fill();
   g.fillStyle=CSS[sc.color];g.fillRect(0,0,1024,10);
-  g.fillStyle='#a6a6a6';g.font='30px "IBM Plex Mono",monospace';g.fillText(`STOP ${cur+1}/${sc.stops.length} · ${n.n.toUpperCase()}${s.tag?' · GBP '+s.tag:''}`,40,64);
-  g.fillStyle='#f4f4f4';g.font='600 56px "Barlow Condensed","Arial Narrow",sans-serif';let y=wrap(g,s.t,40,132,944,58);
-  if(s.drop){g.fillStyle=CSS.drop;g.font='600 32px "IBM Plex Sans",sans-serif';g.fillText('✕ '+s.drop,40,y+10);y+=50;}
-  g.font='28px "IBM Plex Sans",sans-serif';g.fillStyle=CSS.under;y=wrap(g,'Underlay: '+s.u,40,y+10,944,36);g.fillStyle=CSS.over;y=wrap(g,'Overlay: '+s.o,40,y+4,944,36);
-  y+=14;
-  for(const h of s.h){if(y>920)break;g.globalAlpha=h.st==='gone'?.35:1;g.fillStyle='#2b2b2b';g.fillRect(40,y,944,74);g.fillStyle=VRC[h.c||DEFC[h.k]||'over'];g.fillRect(40,y,10,74);
-    g.fillStyle='#f4f4f4';g.font='600 30px "IBM Plex Sans",sans-serif';g.fillText(h.nm+(h.st==='new'?'  + added':h.st==='gone'?'  − removed':h.st==='changed'?'  ~ rewritten':''),66,y+32);
-    g.fillStyle='#b5b5b5';g.font='24px "IBM Plex Mono",monospace';g.fillText(h.f.slice(0,2).map(f=>f[0]+' '+f[1]).join('   ').slice(0,66),66,y+62);y+=84;}
-  g.globalAlpha=1;g.fillStyle='#727272';g.font='26px "IBM Plex Mono",monospace';g.fillText('Trigger: next hop   ·   Grip: ride / overview',40,1000);
+  g.fillStyle='#a6a6a6';g.font='30px "IBM Plex Mono",monospace';g.fillText(`STOP ${cur+1}/${sc.stops.length} · ${n.n.toUpperCase()}${s.tag?' · GBP '+s.tag:''}`,40,66);
+  g.fillStyle='#f4f4f4';g.font='600 60px "Barlow Condensed","Arial Narrow",sans-serif';let y=wrap(g,s.t,40,136,944,62);
+  if(s.drop){g.fillStyle=CSS.drop;g.font='600 34px "IBM Plex Sans",sans-serif';g.fillText('✕ '+s.drop,40,y+12);y+=54;}
+  g.font='31px "IBM Plex Sans",sans-serif';g.fillStyle='#e6e6e6';y=wrap(g,s.d,40,y+18,944,40);
+  g.font='30px "IBM Plex Sans",sans-serif';g.fillStyle=CSS.under;y=wrap(g,'Underlay: '+s.u,40,y+10,944,38);g.fillStyle=CSS.over;y=wrap(g,'Overlay: '+s.o,40,y+2,944,38);
+  y+=14;const live=s.h.filter(h=>h.st!=='gone');let shown=0;
+  for(const h of s.h){if(y+86>1000)break;g.globalAlpha=h.st==='gone'?.35:1;rr(g,40,y,944,78,8);g.fillStyle='#2b2b2b';g.fill();g.fillStyle=VRC[h.c||DEFC[h.k]||'over'];g.fillRect(40,y,10,78);
+    g.fillStyle='#f4f4f4';g.font='600 32px "IBM Plex Sans",sans-serif';g.fillText(h.nm+(h.b?'  '+h.b+' B':'')+(h.st==='new'?'  + added':h.st==='gone'?'  − removed':h.st==='changed'?'  ~ rewritten':''),66,y+34);
+    g.fillStyle='#c4c4c4';g.font='26px "IBM Plex Mono",monospace';let t=h.f.slice(0,3).map(f=>f[0]+' '+f[1]).join('   ');while(g.measureText(t).width>900&&t.length>8)t=t.slice(0,-4)+'…';g.fillText(t,66,y+66);y+=88;shown++;}
+  g.globalAlpha=1;
+  if(shown<s.h.length){g.fillStyle='#a6a6a6';g.font='26px "IBM Plex Mono",monospace';g.fillText(`+ ${s.h.length-shown} more header${s.h.length-shown>1?'s':''}  ·  ${live.reduce((a,h)=>a+h.b,0)} B on the wire`,40,Math.min(y+30,1000));}
+  vrTex.needsUpdate=true;
+}
+function drawVRTravel(dest){
+  const g=vrCanvas.getContext('2d');g.clearRect(0,0,1024,1024);
+  if(KID){g.drawImage(PAPER.image,0,0,1024,1024);g.fillStyle=KCSS[sc.color];g.fillRect(0,0,1024,18);g.fillStyle=INKC;g.font='700 80px "Gaegu",cursive';wrap(g,'Zooming to '+NK[dest][1]+'!',40,420,944,86);g.font='40px "Patrick Hand",cursive';g.fillStyle='#5b5560';g.fillText('Hold on tight, Pip!',40,540);}
+  else{rr(g,0,0,1024,1024,16);g.fillStyle='rgba(34,34,34,.95)';g.fill();g.fillStyle=CSS[sc.color];g.fillRect(0,0,1024,10);g.fillStyle='#f4f4f4';g.font='600 72px "Barlow Condensed","Arial Narrow",sans-serif';wrap(g,'In transit to '+N[dest].n,40,420,944,78);g.font='30px "IBM Plex Mono",monospace';g.fillStyle='#a6a6a6';g.fillText(N[dest].s,40,520);}
   vrTex.needsUpdate=true;
 }
 
@@ -1173,14 +1295,20 @@ function renderKidPanel(){
 function drawVRKid(){
   const g=vrCanvas.getContext('2d'),s=sc.stops[cur],k=s.k||{t:s.t,d:s.d},nk=NK[s.at];
   g.clearRect(0,0,1024,1024);g.drawImage(PAPER.image,0,0,1024,1024);
+  wobbleRect(g,6,6,1012,1012,6);g.lineWidth=6;g.strokeStyle=INKC;g.lineJoin='round';g.stroke();
   g.fillStyle=KCSS[sc.color];g.fillRect(0,0,1024,18);
-  g.fillStyle='#5b5560';g.font='700 36px "Gaegu",cursive';g.fillText(`Stop ${cur+1} of ${sc.stops.length} · ${nk[1]}${s.tag?' · sticker '+s.tag:''}`,40,72);
-  g.fillStyle=INKC;g.font='700 66px "Gaegu",cursive';let y=wrap(g,k.t,40,150,944,64);
+  g.fillStyle='#5b5560';g.font='700 36px "Gaegu",cursive';g.fillText(`Stop ${cur+1} of ${sc.stops.length} · ${nk[1]}${s.tag?' · sticker '+s.tag+': '+stickerName(s.tag):''}`,40,74);
+  g.fillStyle=INKC;g.font='700 66px "Gaegu",cursive';let y=wrap(g,k.t,40,150,944,66);
   if(k.drop||s.drop){g.fillStyle=KCSS.drop;g.font='700 42px "Gaegu",cursive';y=wrap(g,k.drop||s.drop,40,y+14,944,46);}
-  g.fillStyle=INKC;g.font='38px "Patrick Hand",cursive';y=wrap(g,k.d,40,y+28,944,46);
-  g.fillStyle='#8a8290';g.font='30px "Patrick Hand",cursive';g.fillText('Trigger: next stop   ·   Grip: ride along / bird\'s-eye',40,1000);
+  g.fillStyle=INKC;g.font='38px "Patrick Hand",cursive';y=wrap(g,k.d,40,y+30,944,46);
+  if(k.l){y+=14;g.fillStyle='#5b5560';g.font='700 30px "Gaegu",cursive';g.fillText(nk[1]+"'s address book",40,y+30);y+=44;g.font='34px "Patrick Hand",cursive';
+    for(const r of k.l){if(y>900)break;g.fillStyle=INKC;g.font='700 34px "Gaegu",cursive';g.fillText(r[0],60,y+30);const w=g.measureText(r[0]).width;g.font='34px "Patrick Hand",cursive';g.fillText(r[1],60+w+24,y+30);y+=44;}}
+  const carry=kidCarry(s).replace(/<\/(b|small|div)>/g,'\n').replace(/<[^>]+>/g,'').split('\n').map(x=>x.trim()).filter(Boolean);
+  if(carry.length&&y<880){y+=14;g.fillStyle='#5b5560';g.font='700 30px "Gaegu",cursive';g.fillText('What Pip is carrying',40,y+30);y+=44;
+    for(const line of carry){if(y>940)break;g.fillStyle=INKC;g.font='34px "Patrick Hand",cursive';y=wrap(g,'• '+line,60,y+30,924,40)-30+6;}}
   vrTex.needsUpdate=true;
 }
+
 function paint(){
   const c=C(sc.color);
   trail.material.color.setHex(c);clones.forEach(p=>tint(p,c));ghosts.forEach(g=>g.userData.gl.material.color.setHex(c));active.material.color.setHex(c);
@@ -1191,9 +1319,10 @@ function applyMode(k){
   KID=!!k;document.body.classList.toggle('kid',KID);$('kid').setAttribute('aria-pressed',KID);
   try{localStorage.setItem('vxride-crayon',KID?'1':'0');}catch(e){}
   if(!built)return;
-  if(KID){scene.background=PAPER;scene.fog.color.setHex(0xfbf3df);}else{scene.background=new THREE.Color(0x1a1a1a);scene.fog.color.setHex(0x1a1a1a);}
+  scene.background=null;skyT.visible=!KID;skyK.visible=KID;scene.fog.color.setHex(KID?0xfbf3df:0x15171c);blinkMat.color.setHex(KID?0xfbf3df:0x000000);
+  mMat.color.setHex(KID?0x2d2a32:0xffb060);mMat.size=KID?.2:.16;grips.forEach(g=>g.userData.ring.material.color.setHex(KID?0xf2c21b:0x01a982));ctls.forEach(c=>{c.userData.line.material.color.setHex(KID?0x2d2a32:0xffffff);c.userData.dot.material.color.setHex(KID?0x2d2a32:0xffffff);});
   techU.visible=techO.visible=techL.visible=!KID;kidU.visible=kidO.visible=kidL.visible=KID;
-  [packet].concat(clones).forEach(p=>{const u=p.userData;u.core.visible=u.shell.visible=u.gl.visible=!KID;u.kid.visible=KID;});
+  [packet,warpPk].concat(clones).forEach(p=>{const u=p.userData;u.core.visible=u.shell.visible=u.gl.visible=!KID;u.kid.visible=KID;});
   ghosts.forEach(g=>{g.children[0].visible=g.userData.gl.visible=!KID;g.userData.kid.visible=KID;});
   for(const key in tunnels){const m=tunnels[key].mat;m.map=KID?SCRIB:null;m.needsUpdate=true;}
   trail.material.opacity=KID?.8:.55;
@@ -1201,12 +1330,13 @@ function applyMode(k){
   paint();buildTabs();buildTimeline();updateTimeline();renderPanel();drawVR();
 }
 
-function setMode(m){mode=m;$('vRide').setAttribute('aria-pressed',m==='ride');$('vOver').setAttribute('aria-pressed',m==='over');
+function setMode(m){mode=m;$('vRide').setAttribute('aria-pressed',m==='ride');$('vOver').setAttribute('aria-pressed',m==='over');drawCtl();
   if(renderer.xr.isPresenting)return;
   if(m==='over'){camera.fov=60;camera.updateProjectionMatrix();controls.enabled=true;camera.position.copy(overSaved.pos);controls.target.copy(overSaved.tgt);controls.update();}
   else{overSaved.pos.copy(camera.position);overSaved.tgt.copy(controls.target);controls.enabled=false;look.copy(packet.position);}}
 $('next').onclick=next;$('prev').onclick=prev;$('restart').onclick=()=>jump(0);
-$('auto').onclick=()=>{auto=!auto;$('auto').setAttribute('aria-pressed',auto);dwell=0;if(auto&&!moving&&cur>=sc.stops.length-1)jump(0);};
+function toggleAuto(){auto=!auto;$('auto').setAttribute('aria-pressed',auto);dwell=0;if(auto&&!moving&&cur>=sc.stops.length-1)jump(0);drawCtl();}
+$('auto').onclick=toggleAuto;$('snd').onclick=toggleSound;
 $('vRide').onclick=()=>setMode('ride');$('vOver').onclick=()=>setMode('over');
 let showU=true,showO=true;
 $('tU').onclick=()=>{showU=!showU;underG.visible=showU;$('tU').setAttribute('aria-pressed',showU);};
@@ -1222,12 +1352,17 @@ if(!navigator.xr){vrBtn.textContent='VR: needs a headset browser';vrBtn.disabled
 else navigator.xr.isSessionSupported('immersive-vr').then(ok=>{if(!ok){vrBtn.textContent='VR not supported here';vrBtn.disabled=true;}}).catch(()=>{vrBtn.textContent='VR blocked here';vrBtn.disabled=true;});
 vrBtn.onclick=async()=>{
   if(renderer.xr.isPresenting){renderer.xr.getSession().end();return;}
-  try{const s=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor']});
-    await renderer.xr.setSession(s);controls.enabled=false;vrPanel.visible=true;setMode('ride');vrBtn.textContent='Exit VR';
-    s.addEventListener('end',()=>{vrPanel.visible=false;rig.position.set(0,0,0);rig.rotation.set(0,0,0);vrBtn.textContent='Enter VR';camera.position.copy(overSaved.pos);setMode('over');});
-  }catch(err){toast('This page could not start VR here. Host the HTML file on your own site and open it in the headset browser.');}
+  let sess;try{sess=await navigator.xr.requestSession('immersive-vr',{optionalFeatures:['local-floor','bounded-floor','hand-tracking']});}
+  catch(err){toast('This page could not start VR here. Host the HTML file on your own site (HTTPS) and open it in the headset browser.');return;}
+  eyeH=1.55;
+  try{renderer.xr.setReferenceSpaceType('local-floor');await renderer.xr.setSession(sess);}
+  catch(e){try{renderer.xr.setReferenceSpaceType('local');eyeH=.05;await renderer.xr.setSession(sess);}catch(e2){toast('VR could not start: '+(e2.message||e2));return;}}
+  ac();controls.enabled=false;vrUI.visible=true;setMode('ride');vrBtn.textContent='Exit VR';
+  vrWant();rig.position.copy(want);rig.rotation.set(0,0,0);blinkT=-1;blinkMesh.visible=false;drawVR();
+  sess.addEventListener('end',()=>{vrUI.visible=false;blinkMesh.visible=false;warpPk.visible=false;rig.position.set(0,0,0);rig.rotation.set(0,0,0);camera.position.copy(overSaved.pos);camera.rotation.set(0,0,0);vrBtn.textContent='Enter VR';setMode('over');resize();});
 };
-[0,1].forEach(i=>{const c=renderer.xr.getController(i);c.addEventListener('select',next);c.addEventListener('squeeze',()=>setMode(mode==='ride'?'over':'ride'));rig.add(c);});
+/* where the rig should stand: the front face of the current (or next) stop, or the bird's-eye perch */
+function vrWant(){if(mode==='ride'){const fid=moving?sc.stops[cur+1].at:sc.stops[cur].at;frontView(fid,want,tmp2);want.y=tmp2.y-eyeH;want.z-=3.2;}else want.set(0,7-eyeH,27);}
 
 /* ---------------- loop ---------------- */
 function resize(){const w=view.clientWidth,h=view.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);renderer.domElement.style.width=w+'px';renderer.domElement.style.height=h+'px';camera.aspect=w/h;if(w>860)camera.setViewOffset(w,h,Math.min(210,w*.15),0,w,h);else camera.clearViewOffset();camera.updateProjectionMatrix();}
@@ -1239,7 +1374,8 @@ function tick(now){
   const dt=Math.min(.05,(now-last)/1000);last=now;
   const tgt=moving?sc.stops[cur+1]:null;
   if(moving){legT+=dt/legDur;
-    if(legT>=1){legT=1;moving=false;cur++;packet.position.copy(stopPos(cur));packet.visible=true;if(sc.stops[cur].jump)resetTrail();arrive();}
+    if(legT>=1){legT=1;moving=false;cur++;packet.position.copy(stopPos(cur));packet.visible=true;if(sc.stops[cur].jump)resetTrail();arrive();
+      if(legD>.5||sc.stops[cur].drop)chime(sc.stops[cur].drop?'drop':'ok');if(renderer.xr.isPresenting)ctls.forEach(c=>buzz(c.userData.src,sc.stops[cur].drop?1:.5,sc.stops[cur].drop?140:60));}
     else{packet.position.lerpVectors(stopPos(cur),stopPos(cur+1),ease(legT));packet.visible=!tgt.jump;}}
   else if(auto&&cur<sc.stops.length-1){dwell+=dt;if(dwell>5/speed)next();}
   const P=packet.position,st=sc.stops[cur];
@@ -1251,7 +1387,8 @@ function tick(now){
   const ns=THREE.MathUtils.lerp(sh.scale.x,st.shell?1:.001,1-Math.exp(-dt*6));sh.scale.setScalar(Math.max(.001,ns));sh.rotation.y+=dt*.6;sh.rotation.x+=dt*.25;
   packet.userData.core.rotation.y-=dt*1.2;
   const pk=dropped?'sad':sh.scale.x>.5?'wrap':st.h.some(h=>h.k==='bgp')?'card':'note';
-  if(KID){const ks=packet.userData.kid;if(ks.material.map!==PIP[pk])ks.material.map=PIP[pk];ks.material.rotation=REDUCE?0:.09*Math.sin(now/260);const z=pk==='wrap'?2.3:1.9;ks.scale.set(z,z,1);}
+  if(KID){const ks=packet.userData.kid;if(ks.material.map!==PIP[pk])ks.material.map=PIP[pk];ks.material.rotation=REDUCE?0:.09*Math.sin(now/260);ks.position.y=REDUCE?0:.1*Math.sin(now/310);const z=pk==='wrap'?2.3:1.9;ks.scale.set(z,z,1);}
+  updateMotes(dt);
   packet.scale.setScalar(dropped?(REDUCE?.6:.55+.12*Math.sin(now/120)):1);
   /* GBP tag */
   const tagNow=(moving&&tgt.jump)?null:(moving?(tgt.tag&&st.tag?st.tag:null):st.tag);
@@ -1276,15 +1413,20 @@ function tick(now){
     cl.position.lerpVectors(attach(c[0]),attach(c[1]),f);cl.position.z+=(c[2]?.45:-.45)*(1-Math.abs(2*e-1))*.6;
     const isDrop=c[3]&&e>=.98;tint(cl,isDrop?C('drop'):C(sc.color));cl.scale.setScalar(isDrop?.55:.8);if(KID){const m=cl.userData.kid.material,ck=isDrop?'sad':pk==='sad'?'note':pk;if(m.map!==PIP[ck])m.map=PIP[ck];}
     cl.userData.shell.scale.setScalar(Math.max(.001,sh.scale.x*(isDrop?0:1)));});
+  /* ride tunnel strength: 0 at rest, 1 mid-leg */
+  const tunnelLeg=mode==='ride'&&moving&&legD>.5&&!tgt.jump;
+  warp=tunnelLeg?Math.min(1,legT/.1)*Math.min(1,(1-legT)/.16):0;
+  const inT=warp>.6,xr=renderer.xr.isPresenting;
   /* camera */
   const k=1-Math.exp(-dt*(REDUCE?10:3));
-  if(renderer.xr.isPresenting){
-    if(mode==='ride'){
-      const fid=moving?(legD>.5&&!tgt.jump?null:tgt.at):st.at;let ty=0;
-      if(fid){frontView(fid,tmp,tmp2);tmp.y=tmp2.y-1.5;tmp.z-=1.6;}
-      else{tmp.copy(P).addScaledVector(fwdH,-2.2);tmp.y-=1.45;ty=Math.atan2(-fwdH.x,-fwdH.z);}
-      rig.position.lerp(tmp,k);let d=ty-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));yaw+=d*k;rig.rotation.y=yaw;}
-    else{rig.position.lerp(tmp.set(0,5.5,27),k);yaw+=(0-yaw)*k;rig.rotation.y=yaw;}
+  if(xr){
+    /* VR comfort: the rig never rotates on its own. Big moves happen behind the tunnel or a blink; only small corrections glide. */
+    vrWant();
+    if(tunnelLeg){if(inT)rig.position.copy(want);}
+    else if(blinkT<0){if(rig.position.distanceTo(want)>1.4)blinkT=0;else rig.position.lerp(want,k);}
+    rig.rotation.y=0;yaw=0;
+    if(blinkT>=0){blinkT+=dt;const o=blinkT<.16?blinkT/.16:blinkT<.28?1:Math.max(0,1-(blinkT-.28)/.22);blinkMat.opacity=o;blinkMesh.visible=o>.005;if(blinkT>=.16&&blinkT<.28)rig.position.copy(want);if(blinkT>.5){blinkT=-1;blinkMesh.visible=false;}}
+    pollGamepads();updateLasers();
   }else if(mode==='ride'){
     /* in flight: tight chase behind the packet; parked: glide to the front face of the stop */
     const fid=moving?(legD>.5&&!tgt.jump?null:tgt.at):st.at;
@@ -1295,10 +1437,13 @@ function tick(now){
     const fv=60+(REDUCE?0:18*warp);if(Math.abs(camera.fov-fv)>.05){camera.fov+=(fv-camera.fov)*Math.min(1,dt*8);camera.updateProjectionMatrix();}
   }else controls.update();
   /* ride tunnel */
-  warp=(mode==='ride'&&moving&&legD>.5&&!tgt.jump)?Math.min(1,legT/.1)*Math.min(1,(1-legT)/.16):0;
-  const inT=warp>.6;underG.visible=showU&&!inT;overG.visible=showO&&!inT;trail.visible=active.visible=!inT;if(inT){clones.forEach(c=>c.visible=false);tagG.visible=false;}
+  underG.visible=showU&&!inT;overG.visible=showO&&!inT;trail.visible=active.visible=!inT;if(inT){clones.forEach(c=>c.visible=false);tagG.visible=false;}
   const TT=KID?streetT:starT;(KID?starT:streetT).visible=false;TT.visible=warp>.01;
-  if(TT.visible){camera.getWorldPosition(tmp);TT.position.copy(tmp);TT.lookAt(P);if(KID)updateStreet(warp,dt);else updateStar(warp,dt,C(sc.color));}
+  if(TT.visible){
+    if(xr){TT.position.copy(rig.position).add(camera.position);TT.rotation.set(0,Math.PI,0);if(warpPk.parent!==TT)TT.add(warpPk);warpPk.visible=true;warpPk.position.set(0,-.5,4.8);syncPacket(warpPk,dropped,pk,now);packet.visible=false;}
+    else{camera.getWorldPosition(tmp);TT.position.copy(tmp);TT.lookAt(P);warpPk.visible=false;}
+    if(KID)updateStreet(warp,dt);else updateStar(warp,dt,C(sc.color));
+  }else warpPk.visible=false;
   renderer.render(scene,camera);
 }
 
